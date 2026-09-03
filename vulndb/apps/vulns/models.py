@@ -33,6 +33,7 @@ class Vulnerability(models.Model):
     bdu_id = models.CharField(max_length=64, blank=True, default="", db_index=True)
     has_bdu = models.BooleanField(default=False)
     bdu_raw = models.JSONField(default=dict, blank=True)
+    # FSTEC BDU titles and vendor/product strings exceed varchar(255/512).
     vendor = models.TextField(blank=True, default="")
     product_name = models.TextField(blank=True, default="")
     product_version = models.TextField(blank=True, default="")
