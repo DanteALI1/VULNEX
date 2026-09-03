@@ -72,14 +72,23 @@ setup_postgres() {
         sed -i 's/\bident\b/scram-sha-256/g; s/\bpeer\b/scram-sha-256/g' "$hba"
     fi
 
-    # Start PostgreSQL — handle "already running" gracefully
-    systemctl enable postgresql
-    if systemctl is-active --quiet postgresql; then
-        systemctl reload postgresql || systemctl restart postgresql
-        ok "PostgreSQL уже запущен, конфигурация перезагружена"
+    # Start PostgreSQL — handle versioned units (postgresql-16 on РЕД ОС / PGDG)
+    local pg_svc=""
+    for svc in postgresql-16 postgresql postgresql-15 postgresql-14; do
+        if systemctl list-unit-files --type=service --no-legend 2>/dev/null | grep -q "^${svc}\\.service"; then
+            pg_svc="$svc"
+            break
+        fi
+    done
+    [[ -n "$pg_svc" ]] || pg_svc="postgresql"
+
+    systemctl enable "$pg_svc" 2>/dev/null || true
+    if systemctl is-active --quiet "$pg_svc"; then
+        systemctl reload "$pg_svc" || systemctl restart "$pg_svc"
+        ok "PostgreSQL уже запущен ($pg_svc), конфигурация перезагружена"
     else
-        systemctl start postgresql || die "Не удалось запустить PostgreSQL"
-        ok "PostgreSQL запущен"
+        systemctl start "$pg_svc" || systemctl enable --now postgresql-16 || die "Не удалось запустить PostgreSQL"
+        ok "PostgreSQL запущен ($pg_svc)"
     fi
 }
 

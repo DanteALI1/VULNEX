@@ -45,26 +45,6 @@
           <div class="alert info">{{ auth_notice }}</div>
         {% endif %}
 
-        {% if brand.auth_google_enabled or brand.auth_sso_enabled %}
-        <div class="auth-sso-row">
-          {% if brand.auth_google_enabled %}
-          <a class="btn auth-sso-btn" href="{% url 'auth_google_start' %}">
-            <span class="sso-ico">G</span> Войти через Google
-          </a>
-          {% endif %}
-          {% if brand.auth_sso_enabled %}
-          <a class="btn auth-sso-btn" href="{% url 'auth_sso_start' %}">
-            <span class="sso-ico">S</span> Войти через SSO
-          </a>
-          {% endif %}
-        </div>
-        <div class="auth-divider"><span>или логин / пароль</span></div>
-        {% else %}
-        <div class="auth-sso-hint">
-          В настройках можно включить Google OAuth, корпоративный SSO (OIDC / Azure AD / SAML) и LDAP.
-        </div>
-        {% endif %}
-
         <div class="stack-form">
           <div class="field">
             <label for="id_username">Логин</label>
@@ -78,7 +58,22 @@
             <input class="checkbox" type="checkbox" name="remember" /> Запомнить на этом компьютере
           </label>
           <input type="hidden" name="next" value="{{ next }}" />
-          <button class="btn btn-primary btn-lg" type="submit">Войти</button>
+          <button class="btn btn-primary btn-lg auth-submit" type="submit">Войти</button>
+          {% if brand.auth_google_enabled or brand.auth_sso_enabled %}
+          <div class="auth-divider"><span>или</span></div>
+          <div class="auth-sso-stack">
+            {% if brand.auth_google_enabled %}
+            <a class="btn btn-lg auth-sso-btn" href="{% url 'auth_google_start' %}">
+              <span class="sso-ico">G</span> Войти через Google
+            </a>
+            {% endif %}
+            {% if brand.auth_sso_enabled %}
+            <a class="btn btn-lg auth-sso-btn" href="{% url 'auth_sso_start' %}">
+              <span class="sso-ico">S</span> Войти через SSO
+            </a>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         <div class="auth-meta">
           {{ brand.product_name }} · Vulnerability Database

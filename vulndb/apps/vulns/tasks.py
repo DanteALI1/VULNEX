@@ -214,28 +214,32 @@ def parse_bdu_workbook(xlsx_path: str | Path, limit: int | None = None) -> int:
             "references": refs[:50],
         }
 
-        if cves:
-            primary = cves[0]
-            obj, _ = Vulnerability.objects.update_or_create(
-                vuln_id=primary,
-                defaults={
-                    **defaults,
-                    "record_type": Vulnerability.RecordType.CVE,
-                    "title": title or primary,
-                },
-            )
-            if not obj.description_nvd and desc:
-                obj.description_nvd = desc
-                obj.save(update_fields=["description_nvd"])
-        else:
-            Vulnerability.objects.update_or_create(
-                vuln_id=bdu_id,
-                defaults={
-                    **defaults,
-                    "record_type": Vulnerability.RecordType.BDU,
-                },
-            )
-        synced += 1
+        try:
+            if cves:
+                primary = cves[0]
+                obj, _ = Vulnerability.objects.update_or_create(
+                    vuln_id=primary,
+                    defaults={
+                        **defaults,
+                        "record_type": Vulnerability.RecordType.CVE,
+                        "title": title or primary,
+                    },
+                )
+                if not obj.description_nvd and desc:
+                    obj.description_nvd = desc
+                    obj.save(update_fields=["description_nvd"])
+            else:
+                Vulnerability.objects.update_or_create(
+                    vuln_id=bdu_id,
+                    defaults={
+                        **defaults,
+                        "record_type": Vulnerability.RecordType.BDU,
+                    },
+                )
+            synced += 1
+        except Exception:
+            # One oversized/malformed FSTEC row must not abort the workbook.
+            continue
         if limit and synced >= limit:
             break
     return synced

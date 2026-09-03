@@ -10,7 +10,7 @@ sudo bash scripts/install-vulndb.sh
 
 ### Что ставит
 
-1. Пакеты: PostgreSQL, Redis, Python 3, Nginx, firewalld, build-deps  
+1. Пакеты: PostgreSQL, Redis, Python 3, Nginx, firewalld, build-deps. Скрипт ищет unit `postgresql` / `postgresql-16` и вызывает `initdb`, если RPM создал пустой каталог данных (частая причина «Не удалось запустить PostgreSQL» на РЕД ОС 8).
 2. БД и роль `vulndb` + проверка `SELECT 1`  
 3. Redis (`PING`)  
 4. Пользователь ОС `vulndb`, каталоги `/opt/vulndb`, `/var/lib/vulndb`, `/var/log/vulndb`  

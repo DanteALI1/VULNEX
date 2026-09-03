@@ -51,7 +51,7 @@
       </form>
       <div class="top-actions">
         {% block top_actions %}
-        <a class="btn btn-sm" href="{% url 'app_settings' %}#sync">Синхронизации</a>
+        <a class="btn btn-sm" href="{% url 'app_settings' %}#sources">Синхронизации</a>
         {% endblock %}
         {% if request.user.is_authenticated %}
         <div class="user-chip">

@@ -13,7 +13,7 @@ class Vulnerability(models.Model):
 
     vuln_id = models.CharField(max_length=64, unique=True, db_index=True)
     record_type = models.CharField(max_length=16, choices=RecordType.choices, default=RecordType.CVE)
-    title = models.CharField(max_length=512, blank=True, default="")
+    title = models.TextField(blank=True, default="")
     description_nvd = models.TextField(blank=True, default="")
     description_bdu = models.TextField(blank=True, default="")
 
@@ -33,14 +33,13 @@ class Vulnerability(models.Model):
     bdu_id = models.CharField(max_length=64, blank=True, default="", db_index=True)
     has_bdu = models.BooleanField(default=False)
     bdu_raw = models.JSONField(default=dict, blank=True)
-    # FSTEC BDU contains vendor/product strings longer than 255 chars.
-    # Use TEXT to avoid "value too long for type character varying(255)".
+    # FSTEC BDU titles and vendor/product strings exceed varchar(255/512).
     vendor = models.TextField(blank=True, default="")
     product_name = models.TextField(blank=True, default="")
     product_version = models.TextField(blank=True, default="")
     remediation = models.TextField(blank=True, default="")
-    vuln_status = models.CharField(max_length=128, blank=True, default="")
-    exploit_present = models.CharField(max_length=128, blank=True, default="")
+    vuln_status = models.TextField(blank=True, default="")
+    exploit_present = models.TextField(blank=True, default="")
 
     published_at = models.DateTimeField(null=True, blank=True)
     modified_at = models.DateTimeField(null=True, blank=True)

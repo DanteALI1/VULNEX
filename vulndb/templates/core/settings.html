@@ -16,7 +16,9 @@
 
     <div class="settings-nav-group">Доступ</div>
     <a href="#auth" data-tab="auth">Аутентификация</a>
+    {% if license_required %}
     <a href="#license" data-tab="license">Лицензия</a>
+    {% endif %}
 
     <div class="settings-nav-group">Уведомления</div>
     <a href="#mail" data-tab="mail">Почта / Exchange</a>
@@ -51,42 +53,44 @@
 
     <section id="sources" data-tab-pane="settings" data-pane-id="sources" class="settings-pane" style="display:none">
       <div class="settings-pane-h"><h2>Источники и синхронизация</h2><p>API-ключ NVD, XLSX БДУ, галочка KEV и ручные интервалы.</p></div>
-      <form method="post" class="settings-form">
+      <form method="post" class="settings-form settings-form-wide">
         {% csrf_token %}<input type="hidden" name="section" value="sources" />
-        <div class="settings-group">
-          <h3>NVD</h3>
-          <label class="row"><input class="checkbox" type="checkbox" name="nvd_enabled" {% if settings_obj.nvd_enabled %}checked{% endif %} /> Включено</label>
-          <div class="field"><label>API Key</label><input class="input" name="nvd_api_key" value="{{ settings_obj.nvd_api_key }}" /></div>
-          <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="15" name="nvd_sync_interval_minutes" value="{{ settings_obj.nvd_sync_interval_minutes }}" /></div>
-        </div>
-        <div class="settings-group">
-          <h3>БДУ ФСТЭК</h3>
-          <label class="row"><input class="checkbox" type="checkbox" name="bdu_enabled" {% if settings_obj.bdu_enabled %}checked{% endif %} /> Включено</label>
-          <div class="field"><label>URL XLSX</label><input class="input" name="bdu_xlsx_url" value="{{ settings_obj.bdu_xlsx_url }}" /></div>
-          <label class="row"><input class="checkbox" type="checkbox" name="bdu_verify_ssl" {% if settings_obj.bdu_verify_ssl %}checked{% endif %} /> Verify SSL</label>
-          <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="60" name="bdu_sync_interval_minutes" value="{{ settings_obj.bdu_sync_interval_minutes }}" /></div>
-        </div>
-        <div class="settings-group">
-          <h3>CISA KEV</h3>
-          <label class="row"><input class="checkbox" type="checkbox" name="kev_enabled" {% if settings_obj.kev_enabled %}checked{% endif %} /> Включить JSON-фид</label>
-          <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="60" name="kev_sync_interval_minutes" value="{{ settings_obj.kev_sync_interval_minutes }}" /></div>
+        <div class="sources-grid">
+          <div class="settings-group">
+            <h3>NVD</h3>
+            <label class="row"><input class="checkbox" type="checkbox" name="nvd_enabled" {% if settings_obj.nvd_enabled %}checked{% endif %} /> Включено</label>
+            <div class="field"><label>API Key</label><input class="input" name="nvd_api_key" value="{{ settings_obj.nvd_api_key }}" /></div>
+            <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="15" name="nvd_sync_interval_minutes" value="{{ settings_obj.nvd_sync_interval_minutes }}" /></div>
+          </div>
+          <div class="settings-group">
+            <h3>БДУ ФСТЭК</h3>
+            <label class="row"><input class="checkbox" type="checkbox" name="bdu_enabled" {% if settings_obj.bdu_enabled %}checked{% endif %} /> Включено</label>
+            <div class="field"><label>URL XLSX</label><input class="input" name="bdu_xlsx_url" value="{{ settings_obj.bdu_xlsx_url }}" /></div>
+            <label class="row"><input class="checkbox" type="checkbox" name="bdu_verify_ssl" {% if settings_obj.bdu_verify_ssl %}checked{% endif %} /> Verify SSL</label>
+            <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="60" name="bdu_sync_interval_minutes" value="{{ settings_obj.bdu_sync_interval_minutes }}" /></div>
+          </div>
+          <div class="settings-group">
+            <h3>CISA KEV</h3>
+            <label class="row"><input class="checkbox" type="checkbox" name="kev_enabled" {% if settings_obj.kev_enabled %}checked{% endif %} /> Включить JSON-фид</label>
+            <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="60" name="kev_sync_interval_minutes" value="{{ settings_obj.kev_sync_interval_minutes }}" /></div>
+          </div>
         </div>
         <button class="btn btn-primary" type="submit">Сохранить</button>
       </form>
 
-      <div class="settings-group" style="margin-top:18px">
+      <div class="settings-group settings-sync-status">
         <h3>Статус и ручной запуск</h3>
         {% for sync in syncs %}
-        <div class="alert {% if sync.status == 'ok' %}ok{% elif sync.status == 'error' %}warn{% else %}info{% endif %}">
+        <div class="alert {% if sync.status == 'ok' %}ok{% elif sync.status == 'error' %}warn{% else %}info{% endif %}" title="{{ sync.last_error }}">
           <b>{{ sync.get_source_display }}</b> — {{ sync.status }}
           {% if sync.last_success_at %} · {{ sync.last_success_at|date:"d.m.Y H:i" }}{% endif %}
           {% if sync.items_synced %} · записей: {{ sync.items_synced }}{% endif %}
-          {% if sync.last_error %}<div>{{ sync.last_error }}</div>{% endif %}
+          {% if sync.last_error %}<span class="sync-err">{{ sync.last_error }}</span>{% endif %}
         </div>
         {% empty %}
         <div class="alert info">Синхронизации ещё не выполнялись.</div>
         {% endfor %}
-        <form method="post" class="row" style="gap:8px;flex-wrap:wrap">
+        <form method="post" class="sync-actions">
           {% csrf_token %}<input type="hidden" name="section" value="sync" />
           <button class="btn" name="run_sync" value="nvd" type="submit">Синхронизировать NVD</button>
           <button class="btn" name="run_sync" value="bdu" type="submit">Скачать и разобрать БДУ</button>
@@ -147,6 +151,7 @@
       </form>
     </section>
 
+    {% if license_required %}
     <section id="license" data-tab-pane="settings" data-pane-id="license" class="settings-pane" style="display:none">
       <div class="settings-pane-h"><h2>Лицензия</h2></div>
       <div class="alert {% if license_status.valid %}ok{% else %}warn{% endif %}">{{ license_status.message }} · {{ license_status.license_id }}</div>
@@ -158,6 +163,7 @@
         <button class="btn btn-primary" type="submit">Обновить лицензию</button>
       </form>
     </section>
+    {% endif %}
 
     <section id="mail" data-tab-pane="settings" data-pane-id="mail" class="settings-pane" style="display:none">
       <div class="settings-pane-h"><h2>Почта / Exchange</h2><p>SMTP, Gmail, Office 365 или on-prem Exchange.</p></div>
@@ -245,7 +251,10 @@
         if(history.replaceState) history.replaceState(null,'','#'+id);
       });
     });
-    activate((location.hash||'').replace('#','') || 'org');
+    var hash=(location.hash||'').replace('#','') || 'org';
+    if(hash==='sync') hash='sources';
+    if(!nav.querySelector('[data-tab="'+hash+'"]')) hash='org';
+    activate(hash);
   }
   function fmtBytes(n){
     if(!n) return '0 B';

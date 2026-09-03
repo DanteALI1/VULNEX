@@ -101,15 +101,64 @@ ok "Python: $($PYTHON_BIN --version 2>&1)"
 
 # ---------- 2. PostgreSQL ----------
 log "Инициализация PostgreSQL"
-if [[ ! -d /var/lib/pgsql/data ]] && [[ ! -f /var/lib/pgsql/data/PG_VERSION ]]; then
+
+pg_cluster_ready() {
+  find /var/lib/pgsql /var/lib/postgresql -name PG_VERSION 2>/dev/null | grep -q .
+}
+
+init_postgres_cluster() {
+  if pg_cluster_ready; then
+    return 0
+  fi
+  # RPM often creates an empty data dir; that must not skip initdb.
   if command -v postgresql-setup >/dev/null 2>&1; then
     postgresql-setup --initdb || /usr/bin/postgresql-setup --initdb || true
-  elif [[ -x /usr/pgsql-16/bin/postgresql-16-setup ]]; then
-    /usr/pgsql-16/bin/postgresql-16-setup initdb || true
   fi
+  local setup
+  for setup in /usr/pgsql-*/bin/postgresql-*-setup /usr/bin/postgresql-*-setup; do
+    [[ -x "$setup" ]] || continue
+    "$setup" initdb || true
+    pg_cluster_ready && return 0
+  done
+  pg_cluster_ready
+}
+
+start_postgres() {
+  systemctl daemon-reload 2>/dev/null || true
+  local names=()
+  local unit
+  while read -r unit _; do
+    [[ "$unit" =~ ^postgresql([.-][0-9]+)?\.service$ ]] && names+=("${unit%.service}")
+  done < <(systemctl list-unit-files --type=service --no-legend 2>/dev/null || true)
+  names+=(postgresql-16 postgresql-15 postgresql-14 postgresql)
+  local seen="" svc
+  for svc in "${names[@]}"; do
+    [[ -n "$svc" ]] || continue
+    [[ " $seen " == *" $svc "* ]] && continue
+    seen+=" $svc"
+    if systemctl enable --now "$svc" 2>/dev/null; then
+      PG_SERVICE="$svc"
+      return 0
+    fi
+  done
+  return 1
+}
+
+restart_postgres() {
+  if [[ -n "${PG_SERVICE:-}" ]]; then
+    systemctl restart "$PG_SERVICE" 2>/dev/null && return 0
+  fi
+  systemctl restart postgresql-16 2>/dev/null || systemctl restart postgresql 2>/dev/null || \
+    systemctl restart postgresql-15 2>/dev/null || true
+}
+
+init_postgres_cluster || warn "initdb мог не выполниться — проверьте каталог данных PostgreSQL"
+if ! start_postgres; then
+  warn "Доступные unit-файлы PostgreSQL:"
+  systemctl list-unit-files --type=service --no-legend 2>/dev/null | grep -i postgres || true
+  die "Не удалось запустить PostgreSQL (ожидались postgresql / postgresql-16). Смотрите: journalctl -u postgresql* -e"
 fi
-systemctl enable --now postgresql 2>/dev/null || systemctl enable --now postgresql-16 2>/dev/null || \
-  systemctl enable --now postgresql-15 2>/dev/null || die "Не удалось запустить PostgreSQL"
+ok "PostgreSQL service: ${PG_SERVICE}"
 
 # Locate pg_hba
 PG_HBA="$(find /var/lib/pgsql /var/lib/pgsql/*/data /var/lib/postgresql -name pg_hba.conf 2>/dev/null | head -n1 || true)"
@@ -121,7 +170,7 @@ if [[ -n "$PG_HBA" ]]; then
     sed -i 's/^\(host\s\+all\s\+all\s\+::1\/128\s\+\).*/\1scram-sha-256/' "$PG_HBA" || true
     echo "# vulndb install $(date -Iseconds)" >> "$PG_HBA"
   fi
-  systemctl restart postgresql 2>/dev/null || systemctl restart postgresql-16 2>/dev/null || true
+  restart_postgres
   ok "pg_hba: $PG_HBA"
 else
   warn "pg_hba.conf не найден автоматически — при ошибках входа проверьте auth method вручную."
