@@ -283,6 +283,13 @@ def sync_nvd(self, start_index: int | None = None):
                 state.last_success_at = timezone.now()
                 state.last_error = "NVD rate-limited/forbidden; demo seed if empty"
                 state.save()
+                if s.kev_enabled:
+                    # Requirement: CISA KEV must be synchronized together with NVD.
+                    # If NVD fetch fails and we seed demo data, we still enrich with KEV.
+                    try:
+                        sync_kev()
+                    except Exception:  # noqa: BLE001
+                        pass
                 return {"demo": True}
             r.raise_for_status()
             data = r.json()
@@ -346,12 +353,23 @@ def sync_nvd(self, start_index: int | None = None):
         state.save()
         if synced == 0:
             _seed_demo_if_empty()
+        if s.kev_enabled:
+            # Keep KEV in sync with the last NVD refresh.
+            try:
+                sync_kev()
+            except Exception:  # noqa: BLE001
+                pass
         return {"synced": synced}
     except Exception as exc:  # noqa: BLE001
         state.status = "error"
         state.last_error = str(exc)
         state.save()
         _seed_demo_if_empty()
+        if s.kev_enabled:
+            try:
+                sync_kev()
+            except Exception:  # noqa: BLE001
+                pass
         return {"error": str(exc)}
 
 
@@ -494,6 +512,10 @@ def tick_sync_schedules():
     started = []
     for source, enabled, interval, task in mapping:
         if not enabled or not interval:
+            continue
+        # Requirement: when NVD is enabled, KEV is synchronized together with NVD,
+        # so scheduled KEV sync isn't needed (it would just cause duplicate calls).
+        if source == SyncState.Source.KEV and s.nvd_enabled:
             continue
         st = _state(source)
         if st.status == "running":
