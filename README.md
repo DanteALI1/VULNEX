@@ -6,6 +6,32 @@
 
 UI-эталон: каталог [`novatip-ui/`](novatip-ui/) (стилистика enterprise-консоли перенесена в Django-шаблоны).
 
+## Скриншоты
+
+### Вход
+
+![Вход в VULNDB](docs/screenshots/login.webp)
+
+### Дашборд
+
+![Дашборд VULNDB](docs/screenshots/dashboard.webp)
+
+### Каталог уязвимостей
+
+![Каталог уязвимостей](docs/screenshots/vulns.webp)
+
+### Карточка уязвимости
+
+![Карточка CVE — NVD/BDU и CVSS](docs/screenshots/vuln-detail.webp)
+
+### Заявки
+
+![Заявки на устранение](docs/screenshots/tickets.webp)
+
+### Настройки
+
+![Настройки и синхронизации](docs/screenshots/settings.webp)
+
 ## Быстрый старт (Docker Compose)
 
 ```bash
