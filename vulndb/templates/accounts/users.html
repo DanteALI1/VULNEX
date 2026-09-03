@@ -1,0 +1,81 @@
+{% extends "base_app.html" %}
+{% block page_title %}Пользователи{% endblock %}
+{% block crumbs %}<a href="{% url 'dashboard' %}">Дашборд</a><span>/</span><strong>Пользователи</strong>{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Локальные пользователи</h1>
+    <p>Создавать учётки и назначать роли может только администратор. Саморегистрации нет.</p>
+  </div>
+</div>
+
+<div class="users-layout">
+  <div class="panel">
+    <div class="panel-h"><h2>Новый пользователь</h2><span class="sub">логин, пароль, роль</span></div>
+    <form method="post" class="settings-form" style="padding:14px 16px 16px">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert warn">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="field">
+        <label>{{ form.username.label }}</label>
+        {{ form.username }}
+        {% if form.username.errors %}<div class="field-error">{{ form.username.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="field">
+        <label>{{ form.full_name.label }}</label>
+        {{ form.full_name }}
+      </div>
+      <div class="field">
+        <label>{{ form.email.label }}</label>
+        {{ form.email }}
+      </div>
+      <div class="field">
+        <label>{{ form.role.label }}</label>
+        {{ form.role }}
+      </div>
+      <div class="field">
+        <label>{{ form.password.label }}</label>
+        {{ form.password }}
+        {% if form.password.errors %}<div class="field-error">{{ form.password.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="field">
+        <label>{{ form.password2.label }}</label>
+        {{ form.password2 }}
+        {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors.0 }}</div>{% endif %}
+      </div>
+      <label class="row">{{ form.is_verifier }} {{ form.is_verifier.label }}</label>
+      <label class="row">{{ form.is_active }} {{ form.is_active.label }}</label>
+      <button class="btn btn-primary" type="submit">Создать</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="panel-h"><h2>Учётки</h2><span class="sub">{{ users|length }}</span></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Логин</th>
+            <th>ФИО</th>
+            <th>Роль</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="mono">{{ u.username }}</td>
+            <td>{{ u.display_name }}</td>
+            <td>{{ u.get_role_display }}{% if u.is_verifier %} · verifier{% endif %}</td>
+            <td>{% if u.is_active %}<span class="tag tag-ok">активен</span>{% else %}<span class="tag">отключён</span>{% endif %}</td>
+            <td><a class="btn btn-sm" href="{% url 'user_edit' u.pk %}">Изменить</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5">Пользователей нет.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
