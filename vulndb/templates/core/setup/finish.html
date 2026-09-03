@@ -4,11 +4,14 @@
   {% csrf_token %}
   <div class="panel-h"><h2>Финиш</h2></div>
   <div class="panel-b stack">
-    <div class="alert ok">Готово к запуску VULNDB. После подтверждения будут применены миграции (если нужно) и запущен kickoff NVD sync.</div>
+    <div class="alert ok">Готово к запуску VULNDB. После подтверждения стартует синхронизация включённых источников.</div>
     <ul>
       <li>Организация: <b>{{ settings_obj.organization_name }}</b></li>
       <li>Префикс: <span class="mono">{{ settings_obj.local_id_prefix }}</span></li>
-      <li>БД настроена: {% if settings_obj.db_configured %}да{% else %}нет / Compose{% endif %}</li>
+      <li>БД: {% if settings_obj.db_configured %}{{ settings_obj.db_host }}:{{ settings_obj.db_port }}/{{ settings_obj.db_name }}{% else %}Compose / не задана{% endif %}</li>
+      <li>NVD: {% if settings_obj.nvd_enabled %}вкл · каждые {{ settings_obj.nvd_sync_interval_minutes }} мин{% else %}выкл{% endif %}</li>
+      <li>БДУ: {% if settings_obj.bdu_enabled %}вкл · каждые {{ settings_obj.bdu_sync_interval_minutes }} мин{% else %}выкл{% endif %}</li>
+      <li>KEV: {% if settings_obj.kev_enabled %}вкл{% else %}выкл{% endif %}</li>
     </ul>
   </div>
   <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">

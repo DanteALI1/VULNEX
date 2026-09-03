@@ -2,19 +2,32 @@
 {% block wizard_content %}
 <form method="post" class="panel">
   {% csrf_token %}
-  <div class="panel-h"><h2>Почта</h2><span class="sub">SMTP для уведомлений</span></div>
+  <div class="panel-h"><h2>Почта и Exchange</h2><span class="sub">уведомления · можно пропустить</span></div>
   <div class="panel-b stack">
-    <div class="grid-2">
-      <div class="field"><label>SMTP host</label><input class="input" name="smtp_host" value="{{ settings_obj.smtp_host }}" /></div>
-      <div class="field"><label>Port</label><input class="input" name="smtp_port" value="{{ settings_obj.smtp_port }}" /></div>
-      <div class="field"><label>User</label><input class="input" name="smtp_user" value="{{ settings_obj.smtp_user }}" /></div>
-      <div class="field"><label>Password</label><input class="input" type="password" name="smtp_password" /></div>
-      <div class="field"><label>From</label><input class="input" name="smtp_from" value="{{ settings_obj.smtp_from }}" /></div>
+    <div class="alert info">Поддерживаются SMTP, Microsoft Exchange (EWS), Office 365 и Gmail SMTP. Параметры позже редактируются в Настройках.</div>
+    <div class="field"><label>Провайдер</label>
+      <select class="select" name="mail_provider">
+        <option value="smtp" {% if settings_obj.mail_provider == 'smtp' %}selected{% endif %}>SMTP</option>
+        <option value="exchange" {% if settings_obj.mail_provider == 'exchange' %}selected{% endif %}>Microsoft Exchange (EWS)</option>
+        <option value="office365" {% if settings_obj.mail_provider == 'office365' %}selected{% endif %}>Office 365 / Exchange Online</option>
+        <option value="gmail" {% if settings_obj.mail_provider == 'gmail' %}selected{% endif %}>Gmail SMTP</option>
+      </select>
     </div>
-    <label class="row"><input class="checkbox" type="checkbox" name="smtp_use_tls" {% if settings_obj.smtp_use_tls %}checked{% endif %} /> TLS</label>
+    <div class="grid-2">
+      <div class="field"><label>SMTP / хост</label><input class="input" name="smtp_host" value="{{ settings_obj.smtp_host }}" placeholder="smtp.example.ru или outlook.office365.com" /></div>
+      <div class="field"><label>Port</label><input class="input" name="smtp_port" value="{{ settings_obj.smtp_port|default:587 }}" /></div>
+      <div class="field"><label>User</label><input class="input" name="smtp_user" value="{{ settings_obj.smtp_user }}" /></div>
+      <div class="field"><label>Password / App password</label><input class="input" type="password" name="smtp_password" /></div>
+      <div class="field"><label>From</label><input class="input" name="smtp_from" value="{{ settings_obj.smtp_from }}" /></div>
+      <div class="field"><label>Exchange EWS URL</label><input class="input" name="exchange_ews_url" value="{{ settings_obj.exchange_ews_url }}" placeholder="https://mail.example.ru/EWS/Exchange.asmx" /></div>
+      <div class="field"><label>AD Domain</label><input class="input" name="exchange_domain" value="{{ settings_obj.exchange_domain }}" /></div>
+    </div>
+    <label class="row"><input class="checkbox" type="checkbox" name="smtp_use_tls" {% if settings_obj.smtp_use_tls %}checked{% endif %} /> STARTTLS</label>
+    <label class="row"><input class="checkbox" type="checkbox" name="smtp_use_ssl" {% if settings_obj.smtp_use_ssl %}checked{% endif %} /> SSL (порт 465)</label>
   </div>
   <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
     <button class="btn" type="submit" name="action" value="back">Назад</button>
+    <button class="btn" type="submit" name="skip_mail" value="1">Пропустить</button>
     <button class="btn btn-primary" type="submit" name="action" value="next">Продолжить</button>
   </div>
 </form>

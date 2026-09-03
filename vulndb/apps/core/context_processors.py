@@ -21,5 +21,8 @@ def branding(request):
             "logo": s.logo if s and s.logo else None,
             "setup_completed": bool(s and s.setup_completed),
             "mark": "".join(w[0] for w in product.split()[:2]).upper()[:2] or "VD",
+            "auth_google_enabled": bool(s and s.auth_google_enabled and s.auth_google_client_id),
+            "auth_sso_enabled": bool(s and s.auth_sso_enabled and s.auth_sso_client_id),
+            "auth_lockout_attempts": (s.auth_lockout_attempts if s else 5),
         }
     }

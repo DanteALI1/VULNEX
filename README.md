@@ -6,11 +6,52 @@
 
 UI-эталон: каталог [`novatip-ui/`](novatip-ui/) (стилистика enterprise-консоли перенесена в Django-шаблоны).
 
+## Установка одной командой
+
+### Production (РЕД ОС 8 / RHEL-подобные)
+
+Скрипт ставит PostgreSQL, Redis, Python, Nginx, создаёт УЗ/БД, раскладывает приложение, systemd и reverse proxy:
+
+```bash
+# из корня репозитория (или после копирования на сервер)
+sudo bash scripts/install-vulndb.sh
+```
+
+Полезные переменные:
+
+```bash
+sudo VULNDB_DOMAIN=vulndb.example.ru \
+     VULNDB_REPO_URL=https://github.com/DanteALI1/VULNEX.git \
+     VULNDB_ASSUME_YES=1 \
+     bash scripts/install-vulndb.sh
+```
+
+Секреты пишутся в `/root/vulndb-install-credentials.txt`. После установки откройте `http://<host>/setup/`.
+
+Подробный ручной runbook: [docs/DEPLOY_REDOS8.md](docs/DEPLOY_REDOS8.md).
+
+### Локально (Docker Compose)
+
+```bash
+bash scripts/install-docker-dev.sh
+# http://localhost:8000/
+```
+
 ## Скриншоты
 
-### Вход
+### Вход (полная правая панель + Google / SSO)
 
 ![Вход в VULNDB](docs/screenshots/login.webp)
+
+### Мастер настройки
+
+![Мастер · организация](docs/screenshots/wizard-org.webp)
+
+![Мастер · брендинг](docs/screenshots/wizard-branding.webp)
+
+![Мастер · база данных](docs/screenshots/wizard-database.webp)
+
+![Мастер · источники NVD / БДУ / KEV](docs/screenshots/wizard-sources.webp)
 
 ### Дашборд
 
@@ -20,9 +61,9 @@ UI-эталон: каталог [`novatip-ui/`](novatip-ui/) (стилистик
 
 ![Каталог уязвимостей](docs/screenshots/vulns.webp)
 
-### Карточка уязвимости
+### Карточка уязвимости (NVD ↔ BDU, CVSS, поля БДУ)
 
-![Карточка CVE — NVD/BDU и CVSS](docs/screenshots/vuln-detail.webp)
+![Карточка уязвимости](docs/screenshots/vuln-detail.webp)
 
 ### Заявки
 
@@ -30,7 +71,13 @@ UI-эталон: каталог [`novatip-ui/`](novatip-ui/) (стилистик
 
 ### Настройки
 
-![Настройки и синхронизации](docs/screenshots/settings.webp)
+![Настройки · организация](docs/screenshots/settings.webp)
+
+![Настройки · источники и sync](docs/screenshots/settings-sources.webp)
+
+![Настройки · аутентификация](docs/screenshots/settings-auth.webp)
+
+![Настройки · система (CPU / RAM / SWAP / Disk)](docs/screenshots/settings-system.webp)
 
 ## Быстрый старт (Docker Compose)
 

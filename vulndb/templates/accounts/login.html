@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Вход · {{ brand.product_name }}{% endblock %}
 {% block body %}
-<div class="auth-page">
+<div class="auth-page auth-page-wide">
   <aside class="auth-visual">
     <div class="cyber-stage" aria-hidden="true">
       <div class="cyber-grid"></div>
@@ -31,31 +31,63 @@
       <div class="feat"><i></i><span>Без саморегистрации — только учётки администратора</span></div>
     </div>
   </aside>
-  <main class="auth-panel">
-    <form class="auth-card" method="post" action="{% url 'login' %}">
-      {% csrf_token %}
-      <h2>Вход в систему</h2>
-      <p class="lead">Учётные записи создаёт администратор. Саморегистрация отключена.</p>
-      {% if form.errors %}
-        <div class="alert warn">Неверный логин или пароль.</div>
-      {% endif %}
-      <div class="stack-form">
-        <div class="field">
-          <label for="id_username">Логин</label>
-          <input class="input" id="id_username" name="username" autocomplete="username" required />
+
+  <main class="auth-panel auth-panel-fill">
+    <div class="auth-panel-inner">
+      <form class="auth-card auth-card-fill" method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <h2>Вход в систему</h2>
+        <p class="lead">Учётные записи создаёт администратор. Саморегистрация отключена.</p>
+        {% if form.errors %}
+          <div class="alert warn">Неверный логин или пароль.</div>
+        {% endif %}
+        {% if auth_notice %}
+          <div class="alert info">{{ auth_notice }}</div>
+        {% endif %}
+
+        {% if brand.auth_google_enabled or brand.auth_sso_enabled %}
+        <div class="auth-sso-row">
+          {% if brand.auth_google_enabled %}
+          <a class="btn auth-sso-btn" href="{% url 'auth_google_start' %}">
+            <span class="sso-ico">G</span> Войти через Google
+          </a>
+          {% endif %}
+          {% if brand.auth_sso_enabled %}
+          <a class="btn auth-sso-btn" href="{% url 'auth_sso_start' %}">
+            <span class="sso-ico">S</span> Войти через SSO
+          </a>
+          {% endif %}
         </div>
-        <div class="field">
-          <label for="id_password">Пароль</label>
-          <input class="input" id="id_password" name="password" type="password" autocomplete="current-password" required />
+        <div class="auth-divider"><span>или логин / пароль</span></div>
+        {% else %}
+        <div class="auth-sso-hint">
+          В настройках можно включить Google OAuth, корпоративный SSO (OIDC / Azure AD / SAML) и LDAP.
         </div>
-        <label class="row" style="font-size:12.5px;color:var(--text-2)">
-          <input class="checkbox" type="checkbox" name="remember" /> Запомнить на этом компьютере
-        </label>
-        <input type="hidden" name="next" value="{{ next }}" />
-        <button class="btn btn-primary" type="submit">Войти</button>
-      </div>
-      <div class="auth-meta">{{ brand.product_name }} · Vulnerability Database</div>
-    </form>
+        {% endif %}
+
+        <div class="stack-form">
+          <div class="field">
+            <label for="id_username">Логин</label>
+            <input class="input input-lg" id="id_username" name="username" autocomplete="username" required />
+          </div>
+          <div class="field">
+            <label for="id_password">Пароль</label>
+            <input class="input input-lg" id="id_password" name="password" type="password" autocomplete="current-password" required />
+          </div>
+          <label class="row" style="font-size:12.5px;color:var(--text-2)">
+            <input class="checkbox" type="checkbox" name="remember" /> Запомнить на этом компьютере
+          </label>
+          <input type="hidden" name="next" value="{{ next }}" />
+          <button class="btn btn-primary btn-lg" type="submit">Войти</button>
+        </div>
+        <div class="auth-meta">
+          {{ brand.product_name }} · Vulnerability Database
+          <div class="auth-best-practices">
+            Рекомендуется: SSO + MFA, короткий TTL сессии, блокировка после {{ brand.auth_lockout_attempts|default:5 }} попыток.
+          </div>
+        </div>
+      </form>
+    </div>
   </main>
 </div>
 {% endblock %}

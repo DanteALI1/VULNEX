@@ -141,13 +141,9 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", REDIS_URL)
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", REDIS_URL)
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {
-    "sync-nvd-hourly": {
-        "task": "vulndb.apps.vulns.tasks.sync_nvd",
-        "schedule": 3600.0,
-    },
-    "sync-kev-hourly": {
-        "task": "vulndb.apps.vulns.tasks.sync_kev",
-        "schedule": 3600.0,
+    "tick-sync-schedules": {
+        "task": "vulndb.apps.vulns.tasks.tick_sync_schedules",
+        "schedule": 60.0,
     },
     "license-heartbeat": {
         "task": "vulndb.apps.licensing.tasks.license_heartbeat",

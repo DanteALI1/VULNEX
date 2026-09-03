@@ -110,6 +110,36 @@
 </div>
 {% endif %}
 
+{% if vuln.has_bdu or vuln.bdu_raw %}
+<div class="panel" style="margin-bottom:12px">
+  <div class="panel-h"><h2>Поля БДУ ФСТЭК</h2></div>
+  <div class="panel-b">
+    <div class="grid-2">
+      <div><div class="label">Вендор</div><div>{{ vuln.vendor|default:"—" }}</div></div>
+      <div><div class="label">ПО</div><div>{{ vuln.product_name|default:"—" }}</div></div>
+      <div style="grid-column:span 2"><div class="label">Версии</div><div>{{ vuln.product_version|default:"—" }}</div></div>
+      <div><div class="label">Статус</div><div>{{ vuln.vuln_status|default:"—" }}</div></div>
+      <div><div class="label">Эксплойт</div><div>{{ vuln.exploit_present|default:"—" }}</div></div>
+      <div style="grid-column:span 2"><div class="label">Меры устранения</div><div>{{ vuln.remediation|linebreaksbr|default:"—" }}</div></div>
+    </div>
+    {% if vuln.bdu_raw %}
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;color:var(--accent)">Все поля XLSX ({{ vuln.bdu_raw|length }})</summary>
+      <div class="table-wrap" style="margin-top:8px">
+        <table class="data">
+          <tbody>
+            {% for k,v in vuln.bdu_raw.items %}
+            <tr><th style="width:40%;text-align:left">{{ k }}</th><td>{{ v }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
 <div class="panel">
   <div class="panel-h"><h2>Связанные заявки</h2><a href="{% url 'ticket_list' %}">Все заявки</a></div>
   <div class="table-wrap">
