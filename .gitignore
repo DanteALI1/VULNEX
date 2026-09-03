@@ -48,10 +48,12 @@ htmlcov/
 .ruff_cache/
 
 # Docker volumes / dumps
-*.sql
 *.dump
 pgdata/
 redisdata/
+# DB dumps only — keep deploy SQL scripts
+/backups/*.sql
+/*.sql
 
 # Node (if any)
 node_modules/
