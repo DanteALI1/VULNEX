@@ -6,6 +6,37 @@
 
 UI-эталон: каталог [`novatip-ui/`](novatip-ui/) (стилистика enterprise-консоли перенесена в Django-шаблоны).
 
+## Установка одной командой
+
+### Production (РЕД ОС 8 / RHEL-подобные)
+
+Скрипт ставит PostgreSQL, Redis, Python, Nginx, создаёт УЗ/БД, раскладывает приложение, systemd и reverse proxy:
+
+```bash
+# из корня репозитория (или после копирования на сервер)
+sudo bash scripts/install-vulndb.sh
+```
+
+Полезные переменные:
+
+```bash
+sudo VULNDB_DOMAIN=vulndb.example.ru \
+     VULNDB_REPO_URL=https://github.com/DanteALI1/VULNEX.git \
+     VULNDB_ASSUME_YES=1 \
+     bash scripts/install-vulndb.sh
+```
+
+Секреты пишутся в `/root/vulndb-install-credentials.txt`. После установки откройте `http://<host>/setup/`.
+
+Подробный ручной runbook: [docs/DEPLOY_REDOS8.md](docs/DEPLOY_REDOS8.md).
+
+### Локально (Docker Compose)
+
+```bash
+bash scripts/install-docker-dev.sh
+# http://localhost:8000/
+```
+
 ## Скриншоты
 
 ### Вход (полная правая панель + Google / SSO)
