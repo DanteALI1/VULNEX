@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>База данных · Мастер NovaTIP</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+</head>
+<body>
+  <div class="wizard-shell">
+    <header class="topbar" style="position:static">
+      <div class="brand" style="border:0;padding:0;height:auto">
+        <div class="brand-mark">NT</div>
+        <div class="brand-text"><strong>NovaTIP</strong><span>Первичная настройка</span></div>
+      </div>
+      <div class="topbar-spacer"></div>
+      <span style="font-size:12px;color:var(--text-3)">Шаг 4 из 9</span>
+    </header>
+
+    <div class="wizard-body">
+      <div class="steps-scroll">
+        <div class="step is-done"><span>01</span><b>Лицензия</b></div>
+        <div class="step is-done"><span>02</span><b>Организация</b></div>
+        <div class="step is-done"><span>03</span><b>Оформление</b></div>
+        <div class="step is-active"><span>04</span><b>База данных</b></div>
+        <div class="step"><span>05</span><b>Администратор</b></div>
+        <div class="step"><span>06</span><b>Источники</b></div>
+        <div class="step"><span>07</span><b>Почта</b></div>
+        <div class="step"><span>08</span><b>Telegram</b></div>
+        <div class="step"><span>09</span><b>Финиш</b></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h">
+          <h2>Подключение PostgreSQL</h2>
+          <span class="sub">УЗ в БД ≠ админ веб-интерфейса</span>
+        </div>
+        <div class="panel-b stack">
+          <div class="alert info">
+            Нужна отдельная <b>учётная запись PostgreSQL</b> с правами на базу приложения.
+            Если УЗ ещё нет — вкладка «Создать УЗ и базу» (потребуются права superuser, пароль superuser не сохраняется).
+            Подробный runbook: установка ОС → PostgreSQL → эта форма — в документации деплоя.
+          </div>
+
+          <div class="source-toggle" role="tablist" style="align-self:flex-start">
+            <button type="button" class="is-active" id="tab-conn">Подключиться</button>
+            <button type="button" id="tab-create">Создать УЗ и базу</button>
+          </div>
+
+          <div id="pane-conn" class="stack">
+            <div class="grid-2">
+              <div class="field"><label>Host</label><input class="input" value="127.0.0.1" /></div>
+              <div class="field"><label>Port</label><input class="input" value="5432" /></div>
+              <div class="field"><label>Имя базы</label><input class="input" value="novatip" /></div>
+              <div class="field"><label>SSL</label><select class="select"><option>disable</option><option>prefer</option><option>require</option></select></div>
+              <div class="field"><label>Пользователь БД (УЗ)</label><input class="input" value="novatip" autocomplete="off" /></div>
+              <div class="field"><label>Пароль УЗ</label><input class="input" type="password" value="••••••••" autocomplete="new-password" /></div>
+            </div>
+            <div class="row" style="flex-wrap:wrap">
+              <button class="btn" type="button">Проверить подключение</button>
+              <span class="tag tag-ok">SELECT 1 · OK · права на schema public</span>
+            </div>
+          </div>
+
+          <div id="pane-create" class="stack" hidden>
+            <div class="alert warn" style="margin:0">
+              Superuser используется один раз для CREATE USER / CREATE DATABASE / GRANT и <b>не сохраняется</b> в NovaTIP.
+            </div>
+            <div class="grid-2">
+              <div class="field"><label>Host</label><input class="input" value="127.0.0.1" /></div>
+              <div class="field"><label>Port</label><input class="input" value="5432" /></div>
+              <div class="field"><label>Superuser</label><input class="input" value="postgres" /></div>
+              <div class="field"><label>Пароль superuser</label><input class="input" type="password" autocomplete="off" /></div>
+              <div class="field"><label>Новая база</label><input class="input" value="novatip" /></div>
+              <div class="field"><label>Новая УЗ</label><input class="input" value="novatip" /></div>
+              <div class="field"><label>Пароль новой УЗ</label><input class="input" type="password" /></div>
+              <div class="field"><label>Повтор пароля</label><input class="input" type="password" /></div>
+            </div>
+            <label class="row" style="font-size:12.5px;color:var(--text-2)">
+              <input class="checkbox" type="checkbox" checked />
+              Выполнить CREATE USER, CREATE DATABASE OWNER, GRANT ALL на БД и schema public
+            </label>
+            <button class="btn btn-primary" type="button">Создать УЗ и выдать права</button>
+          </div>
+
+          <div class="code-block code-block-sm" style="position:static">
+-- Эквивалент в psql (если создаёте вручную по runbook):
+CREATE USER novatip WITH PASSWORD 'CHANGE_ME_STRONG';
+CREATE DATABASE novatip OWNER novatip ENCODING 'UTF8';
+GRANT ALL PRIVILEGES ON DATABASE novatip TO novatip;
+          </div>
+
+          <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <a class="btn" href="setup-branding.html">← Оформление</a>
+            <a class="btn btn-primary" href="setup.html">Сохранить и далее →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    var tabConn = document.getElementById("tab-conn");
+    var tabCreate = document.getElementById("tab-create");
+    var paneConn = document.getElementById("pane-conn");
+    var paneCreate = document.getElementById("pane-create");
+    tabConn.addEventListener("click", function () {
+      tabConn.classList.add("is-active"); tabCreate.classList.remove("is-active");
+      paneConn.hidden = false; paneCreate.hidden = true;
+    });
+    tabCreate.addEventListener("click", function () {
+      tabCreate.classList.add("is-active"); tabConn.classList.remove("is-active");
+      paneCreate.hidden = false; paneConn.hidden = true;
+    });
+  </script>
+</body>
+</html>

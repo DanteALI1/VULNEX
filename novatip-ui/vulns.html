@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Уязвимости · NovaTIP</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">NT</div>
+        <div class="brand-text"><strong>NovaTIP</strong><span>АО «Пример»</span></div>
+      </div>
+      <nav class="nav">
+        <div class="nav-section">Обзор</div>
+        <a class="nav-item" href="dashboard.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h6V4H4v9zm10 7h6V4h-6v16zM4 20h6v-5H4v5zm10-9h6V4h-6v7z"/></svg>Дашборд</a>
+        <div class="nav-section">Threat Intelligence</div>
+        <a class="nav-item is-active" href="vulns.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/></svg>Уязвимости<span class="badge">24</span></a>
+        <a class="nav-item" href="tickets.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M8 9h8M8 13h5"/></svg>Заявки<span class="badge">7</span></a>
+        <div class="nav-section">Администрирование</div>
+        <a class="nav-item" href="settings.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/></svg>Настройки</a>
+      </nav>
+      <div class="sidebar-foot"><div class="lic"><span class="dot"></span> Online · prefix ACME</div>LIC-2026-000142</div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="crumbs"><a href="dashboard.html">Дашборд</a><span>/</span><strong>Уязвимости</strong></div>
+        <div class="topbar-spacer"></div>
+        <div class="search"><input placeholder="CVE / BDU / ACME-… / CPE / CWE…" value="palo alto" /><kbd>/</kbd></div>
+        <div class="top-actions">
+          <a class="btn btn-sm btn-primary" href="vuln-detail.html">Создать локальную</a>
+          <div class="user-chip"><div class="avatar">АИ</div><div class="user-meta"><b>А. Иванов</b><span>Аналитик</span></div></div>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1>Каталог уязвимостей</h1>
+            <p>Канон NVD + обогащение KEV/BDU + локальные карточки <span class="mono">ACME-YYYY-NNNN</span>. Найдено 1&nbsp;476.</p>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:12px">
+          <div class="filter-panel" id="filters">
+            <button class="filter-panel-toggle" type="button" data-collapse aria-expanded="true">
+              <span>
+                <strong style="font-size:13px">Фильтры поиска</strong>
+                <span style="color:var(--text-3);font-size:12px;margin-left:8px">нажмите, чтобы свернуть / развернуть</span>
+              </span>
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+
+            <div class="filter-chips">
+              <span class="chip">Severity: Critical, High <button type="button" title="Убрать">×</button></span>
+              <span class="chip">KEV <button type="button">×</button></span>
+              <span class="chip">Vendor: paloaltonetworks <button type="button">×</button></span>
+              <span class="chip">90 дней <button type="button">×</button></span>
+            </div>
+
+            <div class="filter-panel-body">
+              <div class="filter-grid">
+                <div class="field">
+                  <label>Строка поиска</label>
+                  <input class="input" value="palo alto" placeholder="ID, текст, CPE…" />
+                </div>
+                <div class="field">
+                  <label>Тип записи</label>
+                  <select class="select">
+                    <option>Все</option>
+                    <option>Только CVE (NVD)</option>
+                    <option>С привязкой BDU</option>
+                    <option selected>Внешние + локальные</option>
+                    <option>Только локальные (ACME-…)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>CVSS min</label>
+                  <input class="input" type="number" min="0" max="10" step="0.1" value="7.0" />
+                </div>
+                <div class="field">
+                  <label>CVSS max</label>
+                  <input class="input" type="number" min="0" max="10" step="0.1" value="10" />
+                </div>
+
+                <div class="filter-group" style="grid-column:span 1">
+                  <h3>Severity</h3>
+                  <div class="check-list">
+                    <label><input class="checkbox" type="checkbox" checked /> Critical <span class="count">18</span></label>
+                    <label><input class="checkbox" type="checkbox" checked /> High <span class="count">142</span></label>
+                    <label><input class="checkbox" type="checkbox" /> Medium <span class="count">890</span></label>
+                    <label><input class="checkbox" type="checkbox" /> Low / None <span class="count">426</span></label>
+                  </div>
+                </div>
+                <div class="filter-group">
+                  <h3>Метки</h3>
+                  <div class="check-list">
+                    <label><input class="checkbox" type="checkbox" checked /> CISA KEV</label>
+                    <label><input class="checkbox" type="checkbox" /> Есть BDU</label>
+                    <label><input class="checkbox" type="checkbox" /> Локальная (INTERNAL)</label>
+                    <label><input class="checkbox" type="checkbox" /> Есть открытая заявка</label>
+                  </div>
+                </div>
+                <div class="filter-group">
+                  <h3>Статус NVD / локальный</h3>
+                  <div class="check-list">
+                    <label><input class="checkbox" type="checkbox" checked /> Analyzed</label>
+                    <label><input class="checkbox" type="checkbox" /> Modified</label>
+                    <label><input class="checkbox" type="checkbox" /> Received</label>
+                    <label><input class="checkbox" type="checkbox" /> Active (local)</label>
+                  </div>
+                </div>
+                <div class="filter-group">
+                  <h3>Эксплуатация</h3>
+                  <div class="check-list">
+                    <label><input class="checkbox" type="checkbox" /> Known ransomware</label>
+                    <label><input class="checkbox" type="checkbox" /> Есть exploit/PoC (метка)</label>
+                    <label><input class="checkbox" type="checkbox" /> Без заявки</label>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label>Vendor / product (CPE)</label>
+                  <input class="input" value="paloaltonetworks" />
+                </div>
+                <div class="field">
+                  <label>CWE</label>
+                  <input class="input" placeholder="CWE-77" />
+                </div>
+                <div class="field">
+                  <label>Опубликовано</label>
+                  <select class="select"><option>Последние 90 дней</option><option>2026</option><option>Любая</option><option>Диапазон…</option></select>
+                </div>
+                <div class="field">
+                  <label>Изменено</label>
+                  <select class="select"><option>Любая</option><option>7 дней</option><option>30 дней</option></select>
+                </div>
+              </div>
+
+              <div class="filter-actions">
+                <button class="btn btn-primary" type="button">Применить</button>
+                <button class="btn" type="button">Сбросить</button>
+                <button class="btn btn-ghost" type="button">Сохранить представление</button>
+                <span class="grow"></span>
+                <span style="font-size:12px;color:var(--text-3)">Активных условий: 4</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="toolbar">
+            <select class="select" style="height:28px;width:auto">
+              <option>Сортировка: severity ↓</option>
+              <option>CVSS ↓</option>
+              <option>Дата изменения ↓</option>
+              <option>Дата публикации ↓</option>
+            </select>
+            <div class="sep"></div>
+            <button class="btn btn-sm" type="button">Создать заявки (0)</button>
+            <button class="btn btn-sm" type="button">Экспорт CSV</button>
+            <span class="grow"></span>
+            <span style="font-size:12px;color:var(--text-3)">1–25 из 160</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th style="width:28px"><input class="checkbox" type="checkbox" /></th>
+                  <th>ID</th>
+                  <th>Описание</th>
+                  <th>CVSS</th>
+                  <th>Метки</th>
+                  <th>Статус</th>
+                  <th>Изменено</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="is-selected">
+                  <td><input class="checkbox" type="checkbox" checked /></td>
+                  <td class="mono"><a href="vuln-detail.html">CVE-2024-3400</a></td>
+                  <td>PAN-OS GlobalProtect — RCE без аутентификации</td>
+                  <td><span class="tag tag-crit">9.8</span></td>
+                  <td><span class="tag tag-kev">KEV</span> <span class="tag tag-bdu">BDU</span></td>
+                  <td class="muted">Analyzed</td>
+                  <td class="muted">01.09.2026</td>
+                </tr>
+                <tr>
+                  <td><input class="checkbox" type="checkbox" /></td>
+                  <td class="mono"><a href="vuln-detail.html">ACME-2026-0042</a></td>
+                  <td>Обход MFA на VPN-шлюзе (Red Team)</td>
+                  <td><span class="tag tag-high">8.1</span></td>
+                  <td><span class="tag tag-int">LOCAL</span></td>
+                  <td class="muted">Active</td>
+                  <td class="muted">30.08.2026</td>
+                </tr>
+                <tr>
+                  <td><input class="checkbox" type="checkbox" /></td>
+                  <td class="mono"><a href="vuln-detail.html">CVE-2025-24813</a></td>
+                  <td>Apache Tomcat Path Equivalence — RCE</td>
+                  <td><span class="tag tag-crit">9.8</span></td>
+                  <td><span class="tag tag-kev">KEV</span></td>
+                  <td class="muted">Analyzed</td>
+                  <td class="muted">28.08.2026</td>
+                </tr>
+                <tr>
+                  <td><input class="checkbox" type="checkbox" /></td>
+                  <td class="mono"><a href="vuln-detail.html">BDU:2024-02761</a></td>
+                  <td>Запись БДУ без CVE (ожидает merge)</td>
+                  <td><span class="tag tag-high">8.8</span></td>
+                  <td><span class="tag tag-bdu">BDU only</span></td>
+                  <td class="muted">Mapped</td>
+                  <td class="muted">20.08.2026</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <span>Строк: 25</span>
+            <div class="pages"><span class="is-active">1</span><a href="#">2</a><a href="#">3</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="js/tip-ui.js"></script>
+</body>
+</html>

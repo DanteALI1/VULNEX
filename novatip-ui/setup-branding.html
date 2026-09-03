@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Оформление · Мастер NovaTIP</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+</head>
+<body>
+  <div class="wizard-shell">
+    <header class="topbar" style="position:static">
+      <div class="brand" style="border:0;padding:0;height:auto">
+        <div class="brand-mark">NT</div>
+        <div class="brand-text"><strong>NovaTIP</strong><span>Первичная настройка</span></div>
+      </div>
+      <div class="topbar-spacer"></div>
+      <span style="font-size:12px;color:var(--text-3)">Шаг 3 из 9</span>
+    </header>
+
+    <div class="wizard-body">
+      <div class="steps-scroll">
+        <div class="step is-done"><span>01</span><b>Лицензия</b></div>
+        <div class="step is-done"><span>02</span><b>Организация</b></div>
+        <div class="step is-active"><span>03</span><b>Оформление</b></div>
+        <div class="step"><span>04</span><b>База данных</b></div>
+        <div class="step"><span>05</span><b>Администратор</b></div>
+        <div class="step"><span>06</span><b>Источники</b></div>
+        <div class="step"><span>07</span><b>Почта</b></div>
+        <div class="step"><span>08</span><b>Telegram</b></div>
+        <div class="step"><span>09</span><b>Финиш</b></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h">
+          <h2>Логотип и страница входа</h2>
+          <span class="sub">отображается слева на /login</span>
+        </div>
+        <div class="panel-b stack">
+          <div class="logo-upload">
+            <div class="preview" id="logo-preview">NT</div>
+            <div class="grow stack" style="gap:6px">
+              <div style="font-weight:650">Логотип компании</div>
+              <div style="font-size:12px;color:var(--text-2)">PNG / SVG, до 512&nbsp;КБ, рекомендуется квадрат 256×256. Хранится локально в media.</div>
+              <div class="row">
+                <button class="btn btn-sm" type="button">Загрузить</button>
+                <button class="btn btn-sm btn-ghost" type="button">Сбросить</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Заголовок на странице входа</label>
+            <input class="input" value="Управление уязвимостями и угрозами в одном контуре" />
+          </div>
+          <div class="field">
+            <label>Описание (под заголовком)</label>
+            <textarea class="textarea">Каталог NVD / KEV / БДУ, локальные уязвимости с вашим префиксом ID и заявки на устранение.</textarea>
+          </div>
+          <div class="field">
+            <label>Подпись под формой</label>
+            <input class="input" value="NovaTIP 1.0 · АО «Пример» · лицензия online" />
+          </div>
+
+          <div class="alert info">Анимация кибербезопасности на login включается всегда; логотип и тексты можно позже менять в «Настройки → Внешний вид».</div>
+
+          <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <a class="btn" href="setup.html">← Организация</a>
+            <a class="btn btn-primary" href="setup-database.html">Далее → База данных</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

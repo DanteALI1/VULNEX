@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NovaTIP — шаблоны UI v2</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+  <style>
+    .gallery { max-width: 980px; margin: 0 auto; padding: 40px 20px 64px; }
+    .gallery h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -0.02em; }
+    .gallery .lead { margin: 0 0 28px; color: var(--text-2); max-width: 720px; line-height: 1.55; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .card-link {
+      display: block; padding: 16px; background: #fff; border: 1px solid var(--border);
+      border-radius: 4px; color: inherit; text-decoration: none; box-shadow: var(--shadow-sm);
+    }
+    .card-link:hover { border-color: var(--accent); box-shadow: var(--shadow-md); text-decoration: none; }
+    .card-link .num { font-size: 11px; color: var(--text-3); letter-spacing: .06em; text-transform: uppercase; }
+    .card-link h2 { margin: 6px 0 6px; font-size: 15px; }
+    .card-link p { margin: 0; font-size: 12.5px; color: var(--text-2); line-height: 1.45; }
+    .hero-bar {
+      background: #1b2430; color: #e8edf4; padding: 18px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+    .hero-bar .brand { border: 0; height: auto; padding: 0; }
+    @media (max-width: 900px) { .cards { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .cards { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="hero-bar">
+    <div class="brand">
+      <div class="brand-mark">NT</div>
+      <div class="brand-text">
+        <strong>NovaTIP</strong>
+        <span>Шаблоны v2 · локальные ID · workflow заявок</span>
+      </div>
+    </div>
+    <a class="btn btn-primary" href="dashboard.html">Открыть дашборд</a>
+  </div>
+
+  <div class="gallery">
+    <h1>Шаблоны страниц NovaTIP</h1>
+    <p class="lead">
+      Локальная база уязвимостей с префиксом ID из мастера, cyber-login с логотипом,
+      сворачиваемые фильтры, карточка на одной странице (NVD/BDU + блок CVSS),
+      заявки с подтверждением закрытия, настройки по вкладкам.
+    </p>
+
+    <div class="cards">
+      <a class="card-link" href="login.html"><div class="num">01</div><h2>Вход</h2><p>Логотип + текст из мастера, анимация кибербезопасности.</p></a>
+      <a class="card-link" href="dashboard.html"><div class="num">02</div><h2>Дашборд</h2><p>KPI, источники, локальные ACME-*, заявки.</p></a>
+      <a class="card-link" href="vulns.html"><div class="num">03</div><h2>Каталог</h2><p>Расширенные фильтры, сворачиваемая панель, чипы.</p></a>
+      <a class="card-link" href="vuln-detail.html"><div class="num">04</div><h2>Карточка</h2><p>Одна страница: NVD↔BDU, отдельный блок CVSS, CPE, заявки.</p></a>
+      <a class="card-link" href="tickets.html"><div class="num">05</div><h2>Заявки</h2><p>Роли, переходы, модалки resolved → closed.</p></a>
+      <a class="card-link" href="setup-license.html"><div class="num">06</div><h2>Мастер · лицензия</h2><p>Адаптивные шаги, горизонтальный скролл.</p></a>
+      <a class="card-link" href="setup.html"><div class="num">07</div><h2>Мастер · организация</h2><p>Префикс локальных ID как CVE/BDU.</p></a>
+      <a class="card-link" href="setup-database.html"><div class="num">08b</div><h2>Мастер · БД</h2><p>Подключение или создание УЗ PostgreSQL + GRANT.</p></a>
+      <a class="card-link" href="settings.html"><div class="num">09</div><h2>Настройки</h2><p>Вкладки: ID, login, sync, заявки, почта…</p></a>
+      <a class="card-link" href="settings.html#sync"><div class="num">10</div><h2>Синхронизации</h2><p>Вкладка внутри Настроек.</p></a>
+    </div>
+  </div>
+</body>
+</html>

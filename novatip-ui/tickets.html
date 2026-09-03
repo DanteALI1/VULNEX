@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Заявки · NovaTIP</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">NT</div>
+        <div class="brand-text"><strong>NovaTIP</strong><span>АО «Пример»</span></div>
+      </div>
+      <nav class="nav">
+        <a class="nav-item" href="dashboard.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h6V4H4v9zm10 7h6V4h-6v16z"/></svg>Дашборд</a>
+        <a class="nav-item" href="vulns.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/></svg>Уязвимости</a>
+        <a class="nav-item is-active" href="tickets.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M8 9h8M8 13h5"/></svg>Заявки<span class="badge">7</span></a>
+        <a class="nav-item" href="settings.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/></svg>Настройки</a>
+      </nav>
+      <div class="sidebar-foot"><div class="lic"><span class="dot"></span> Online</div>workflow v1</div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="crumbs"><a href="dashboard.html">Дашборд</a><span>/</span><strong>Заявки</strong></div>
+        <div class="topbar-spacer"></div>
+        <div class="search"><input placeholder="T-… / CVE / исполнитель…" /><kbd>/</kbd></div>
+        <div class="top-actions">
+          <button class="btn btn-sm btn-primary" type="button" data-modal-open="modal-new">Новая заявка</button>
+          <div class="user-chip"><div class="avatar">СП</div><div class="user-meta"><b>С. Петров</b><span>Исполнитель</span></div></div>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1>Заявки на устранение</h1>
+            <p>
+              Статусы меняют роли по правилам ниже. Закрытие — только после
+              <b>подтверждения</b> постановщиком (или verifier), не одним кликом исполнителя.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:12px">
+          <div class="panel-h"><h2>Жизненный цикл</h2><a href="#matrix">Матрица прав</a></div>
+          <div class="flow">
+            <span class="flow-step is-done">new</span><span class="flow-arrow">→</span>
+            <span class="flow-step is-done">triage</span><span class="flow-arrow">→</span>
+            <span class="flow-step is-current">in_progress</span><span class="flow-arrow">→</span>
+            <span class="flow-step">waiting</span><span class="flow-arrow">→</span>
+            <span class="flow-step">resolved</span><span class="flow-arrow">→</span>
+            <span class="flow-step">closed</span>
+            <span class="flow-arrow" style="margin-left:8px">|</span>
+            <span class="flow-step is-reject">rejected</span>
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="panel">
+            <div class="toolbar">
+              <select class="select" style="height:28px;width:auto"><option>Открытые</option><option>Мои как исполнитель</option><option>Ждут моего подтверждения</option><option>Просроченные SLA</option><option>Закрытые</option></select>
+              <span class="grow"></span>
+              <span style="font-size:12px;color:var(--text-3)">7 открытых</span>
+            </div>
+            <div class="table-wrap">
+              <table class="data">
+                <thead>
+                  <tr>
+                    <th>№</th>
+                    <th>Уязвимость</th>
+                    <th>Заголовок</th>
+                    <th>Статус</th>
+                    <th>P</th>
+                    <th>Исполнитель</th>
+                    <th>SLA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="is-selected">
+                    <td class="mono">T-1048</td>
+                    <td class="mono"><a href="vuln-detail.html">CVE-2024-3400</a></td>
+                    <td>Патч PAN-OS на периметре DC1</td>
+                    <td><span class="tag tag-status">in_progress</span></td>
+                    <td><span class="tag tag-crit">P1</span></td>
+                    <td>С. Петров</td>
+                    <td>14 ч</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">T-1042</td>
+                    <td class="mono"><a href="vuln-detail.html">CVE-2025-24813</a></td>
+                    <td>Обновление Tomcat</td>
+                    <td><span class="tag tag-status">triage</span></td>
+                    <td><span class="tag tag-high">P2</span></td>
+                    <td>—</td>
+                    <td style="color:var(--danger)">−2 дн</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">T-1039</td>
+                    <td class="mono"><a href="vuln-detail.html">ACME-2026-0042</a></td>
+                    <td>Усиление MFA VPN</td>
+                    <td><span class="tag tag-info">waiting</span></td>
+                    <td><span class="tag tag-med">P3</span></td>
+                    <td>М. Орлова</td>
+                    <td>5 дн</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">T-1020</td>
+                    <td class="mono"><a href="vuln-detail.html">CVE-2023-4966</a></td>
+                    <td>Проверка Citrix после hotfix</td>
+                    <td><span class="tag tag-ok">resolved</span></td>
+                    <td><span class="tag tag-high">P2</span></td>
+                    <td>А. Иванов</td>
+                    <td>ждёт закрытия</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <aside class="panel">
+            <div class="panel-h">
+              <h2>T-1048</h2>
+              <span class="tag tag-status">in_progress</span>
+            </div>
+            <div class="panel-b stack">
+              <div>
+                <div style="font-weight:650;margin-bottom:4px">Патч PAN-OS на периметре DC1</div>
+                <div style="font-size:12px;color:var(--text-2)">
+                  Уязвимость: <a class="mono" href="vuln-detail.html">CVE-2024-3400</a>
+                  · Постановщик: А. Иванов
+                  · Исполнитель: <b>С. Петров (вы)</b>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="meta-item"><div class="k">Приоритет</div><div class="v">P1</div></div>
+                <div class="meta-item"><div class="k">SLA due</div><div class="v">03.09 12:00</div></div>
+              </div>
+
+              <div class="action-bar">
+                <div class="role-hint">Доступные действия для роли <b>исполнитель</b> в статусе in_progress:</div>
+                <button class="btn btn-sm" type="button" data-modal-open="modal-wait">В ожидание</button>
+                <button class="btn btn-sm btn-primary" type="button" data-modal-open="modal-resolve">Отметить устранённой</button>
+                <button class="btn btn-sm" type="button">Комментарий</button>
+              </div>
+
+              <div class="alert info" style="margin:0">
+                Чтобы <b>закрыть</b> заявку, исполнитель сначала ставит <b>resolved</b> (с описанием работ).
+                Затем постановщик или verifier нажимает «Подтвердить закрытие» → <b>closed</b>.
+                Исполнитель сам закрыть не может.
+              </div>
+
+              <div>
+                <h3 style="margin:0 0 8px;font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em">История статусов</h3>
+                <div class="timeline">
+                  <div class="tl-item"><div class="mark"></div><div><div class="when">02.09 10:15 · С. Петров</div><div class="what">in_progress → комментарий: hotfix на fw-dc1-01</div></div></div>
+                  <div class="tl-item"><div class="mark"></div><div><div class="when">01.09 16:40 · А. Иванов</div><div class="what">triage → in_progress, назначен С. Петров</div></div></div>
+                  <div class="tl-item"><div class="mark"></div><div><div class="when">01.09 15:02 · А. Иванов</div><div class="what">Создана (new → triage) из CVE-2024-3400</div></div></div>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="panel" id="matrix" style="margin-top:12px">
+          <div class="panel-h"><h2>Кто меняет статусы</h2><span class="sub">зашито в систему, настраивается в Настройки → Заявки</span></div>
+          <div class="table-wrap">
+            <table class="perm-matrix">
+              <thead>
+                <tr>
+                  <th>Переход</th>
+                  <th>Постановщик / analyst</th>
+                  <th>Исполнитель</th>
+                  <th>Verifier</th>
+                  <th>Admin</th>
+                  <th>Обязательно</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Создать (→ new/triage)</td>
+                  <td class="yes">да</td><td class="no">—</td><td class="no">—</td><td class="yes">да</td>
+                  <td>связь с уязвимостью, приоритет</td>
+                </tr>
+                <tr>
+                  <td>Назначить исполнителя</td>
+                  <td class="yes">да</td><td class="no">—</td><td class="no">—</td><td class="yes">да</td>
+                  <td>пользователь с ролью ticket_assignee</td>
+                </tr>
+                <tr>
+                  <td>triage → in_progress</td>
+                  <td class="yes">да</td><td class="yes">принять</td><td class="no">—</td><td class="yes">да</td>
+                  <td>исполнитель должен быть назначен</td>
+                </tr>
+                <tr>
+                  <td>in_progress ↔ waiting</td>
+                  <td class="no">—</td><td class="yes">да</td><td class="no">—</td><td class="yes">да</td>
+                  <td>причина ожидания</td>
+                </tr>
+                <tr>
+                  <td>→ resolved</td>
+                  <td class="no">—</td><td class="yes">да</td><td class="no">—</td><td class="yes">да</td>
+                  <td>описание устранения (+ вложение опц.)</td>
+                </tr>
+                <tr>
+                  <td>resolved → closed</td>
+                  <td class="yes">подтвердить</td><td class="no">нет</td><td class="yes">да</td><td class="yes">да</td>
+                  <td>явное подтверждение</td>
+                </tr>
+                <tr>
+                  <td>resolved → in_progress</td>
+                  <td class="yes">вернуть</td><td class="no">—</td><td class="yes">да</td><td class="yes">да</td>
+                  <td>причина возврата</td>
+                </tr>
+                <tr>
+                  <td>→ rejected</td>
+                  <td class="yes">из new/triage</td><td class="no">—</td><td class="no">—</td><td class="yes">да</td>
+                  <td>причина отклонения</td>
+                </tr>
+                <tr>
+                  <td>Принудительное closed</td>
+                  <td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">только admin</td>
+                  <td>причина + запись в аудит</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Пример: заявка в resolved — кнопки закрытия -->
+        <div class="panel" style="margin-top:12px">
+          <div class="panel-h"><h2>Пример UI подтверждения · T-1020 (resolved)</h2><span class="tag tag-ok">resolved</span></div>
+          <div class="panel-b">
+            <div class="action-bar">
+              <div class="role-hint">Вы вошли как постановщик А. Иванов — доступно закрытие:</div>
+              <button class="btn btn-sm btn-primary" type="button" data-modal-open="modal-close">Подтвердить закрытие</button>
+              <button class="btn btn-sm" type="button" data-modal-open="modal-reopen">Вернуть в работу</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-backdrop" id="modal-resolve">
+    <div class="modal">
+      <div class="modal-h"><h3>Отметить устранённой</h3><button class="btn btn-sm btn-ghost" type="button" data-modal-close>×</button></div>
+      <div class="modal-b">
+        <div class="alert info">Статус станет <b>resolved</b>. Заявка не закроется, пока постановщик не подтвердит.</div>
+        <div class="field"><label>Что сделано</label><textarea class="textarea" placeholder="Версия прошивки, хосты, ссылка на CR…"></textarea></div>
+        <div class="field"><label>Вложение (опционально)</label><input class="input" type="text" placeholder="screenshot / отчёт" readonly /></div>
+      </div>
+      <div class="modal-f">
+        <button class="btn" type="button" data-modal-close>Отмена</button>
+        <button class="btn btn-primary" type="button" data-modal-close>Перевести в resolved</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-close">
+    <div class="modal">
+      <div class="modal-h"><h3>Подтвердить закрытие</h3><button class="btn btn-sm btn-ghost" type="button" data-modal-close>×</button></div>
+      <div class="modal-b">
+        <p style="margin:0;color:var(--text-2)">Проверьте, что уязвимость устранена на всех заявленных активах. Статус станет <b>closed</b> (read-only).</p>
+        <div class="field"><label>Комментарий подтверждения</label><textarea class="textarea">Проверено на fw-dc1-01/02, сканирование чистое.</textarea></div>
+      </div>
+      <div class="modal-f">
+        <button class="btn" type="button" data-modal-close>Отмена</button>
+        <button class="btn btn-primary" type="button" data-modal-close>Закрыть заявку</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-wait">
+    <div class="modal">
+      <div class="modal-h"><h3>Перевести в ожидание</h3><button class="btn btn-sm btn-ghost" type="button" data-modal-close>×</button></div>
+      <div class="modal-b">
+        <div class="field"><label>Причина</label>
+          <select class="select"><option>Окно изменений</option><option>Ответ вендора</option><option>Зависимость от другой заявки</option><option>Другое</option></select>
+        </div>
+        <div class="field"><label>Комментарий</label><textarea class="textarea"></textarea></div>
+      </div>
+      <div class="modal-f">
+        <button class="btn" type="button" data-modal-close>Отмена</button>
+        <button class="btn btn-primary" type="button" data-modal-close>В waiting</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-reopen">
+    <div class="modal">
+      <div class="modal-h"><h3>Вернуть в работу</h3><button class="btn btn-sm btn-ghost" type="button" data-modal-close>×</button></div>
+      <div class="modal-b">
+        <div class="field"><label>Причина возврата</label><textarea class="textarea" placeholder="Что не закрыто / где воспроизводится…"></textarea></div>
+      </div>
+      <div class="modal-f">
+        <button class="btn" type="button" data-modal-close>Отмена</button>
+        <button class="btn btn-primary" type="button" data-modal-close>Вернуть в in_progress</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-new">
+    <div class="modal">
+      <div class="modal-h"><h3>Новая заявка</h3><button class="btn btn-sm btn-ghost" type="button" data-modal-close>×</button></div>
+      <div class="modal-b">
+        <div class="field"><label>Уязвимость</label><input class="input" placeholder="CVE-… / ACME-…" /></div>
+        <div class="field"><label>Заголовок</label><input class="input" /></div>
+        <div class="field"><label>Приоритет</label><select class="select"><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></div>
+        <div class="field"><label>Исполнитель</label><select class="select"><option>— назначить позже —</option><option>С. Петров</option><option>М. Орлова</option></select></div>
+      </div>
+      <div class="modal-f">
+        <button class="btn" type="button" data-modal-close>Отмена</button>
+        <button class="btn btn-primary" type="button" data-modal-close>Создать</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/tip-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Вход · NovaTIP</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+</head>
+<body>
+  <div class="auth-page">
+    <aside class="auth-visual">
+      <div class="cyber-stage" aria-hidden="true">
+        <div class="cyber-grid"></div>
+        <div class="cyber-ring"></div>
+        <div class="cyber-hex h1"></div>
+        <div class="cyber-hex h2"></div>
+        <div class="cyber-hex h3"></div>
+        <div class="cyber-nodes">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="cyber-scan"></div>
+      </div>
+
+      <div class="brand" style="border:0;padding:0;height:auto">
+        <!-- logo из настроек / мастера -->
+        <div class="brand-mark logo-img lg" style="width:48px;height:48px;font-size:16px">NT</div>
+        <div class="brand-text">
+          <strong>NovaTIP</strong>
+          <span>АО «Пример» · Threat Intelligence</span>
+        </div>
+      </div>
+
+      <h1>Управление уязвимостями и угрозами в одном контуре</h1>
+      <p>
+        <!-- текст из мастера настройки: «Текст на странице входа» -->
+        Каталог NVD / KEV / БДУ, локальные уязвимости с вашим префиксом ID,
+        заявки на устранение и контроль лицензии — для площадок на РЕД&nbsp;ОС&nbsp;8.
+      </p>
+      <div class="features">
+        <div class="feat"><i></i><span>Единая карточка: CVE + KEV + BDU + локальный ID</span></div>
+        <div class="feat"><i></i><span>Заявки с ролями, SLA и подтверждением закрытия</span></div>
+        <div class="feat"><i></i><span>Без саморегистрации — только учётки администратора</span></div>
+      </div>
+    </aside>
+
+    <main class="auth-panel">
+      <form class="auth-card" action="dashboard.html" method="get">
+        <h2>Вход в систему</h2>
+        <p class="lead">Учётные записи создаёт администратор. Саморегистрация отключена.</p>
+        <div class="stack-form">
+          <div class="field">
+            <label for="login">Логин</label>
+            <input class="input" id="login" name="login" autocomplete="username" value="a.ivanov" />
+          </div>
+          <div class="field">
+            <label for="password">Пароль</label>
+            <input class="input" id="password" name="password" type="password" autocomplete="current-password" value="••••••••" />
+          </div>
+          <label class="row" style="font-size:12.5px;color:var(--text-2)">
+            <input class="checkbox" type="checkbox" checked /> Запомнить на этом компьютере
+          </label>
+          <button class="btn btn-primary" type="submit">Войти</button>
+        </div>
+        <div class="auth-meta">
+          NovaTIP 1.0 · лицензия online
+          <br /><a href="index.html">← к списку шаблонов</a>
+        </div>
+      </form>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CVE-2024-3400 · NovaTIP</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">NT</div>
+        <div class="brand-text"><strong>NovaTIP</strong><span>АО «Пример»</span></div>
+      </div>
+      <nav class="nav">
+        <a class="nav-item" href="dashboard.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h6V4H4v9zm10 7h6V4h-6v16z"/></svg>Дашборд</a>
+        <a class="nav-item is-active" href="vulns.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/></svg>Уязвимости</a>
+        <a class="nav-item" href="tickets.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M8 9h8"/></svg>Заявки</a>
+        <a class="nav-item" href="settings.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/></svg>Настройки</a>
+      </nav>
+      <div class="sidebar-foot"><div class="lic"><span class="dot"></span> Online</div>prefix ACME</div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="crumbs"><a href="vulns.html">Уязвимости</a><span>/</span><strong>CVE-2024-3400</strong></div>
+        <div class="topbar-spacer"></div>
+        <div class="top-actions">
+          <button class="btn btn-sm" type="button">В избранное</button>
+          <a class="btn btn-sm btn-primary" href="tickets.html">Создать заявку</a>
+          <div class="user-chip"><div class="avatar">АИ</div><div class="user-meta"><b>А. Иванов</b><span>Аналитик</span></div></div>
+        </div>
+      </header>
+
+      <div class="content card-page">
+        <!-- Шапка -->
+        <div class="panel" style="margin-bottom:12px">
+          <div class="detail-head" style="border:0;padding-bottom:14px">
+            <div class="id-row">
+              <h1>CVE-2024-3400</h1>
+              <span class="tag tag-crit">9.8 Critical</span>
+              <span class="tag tag-kev">KEV</span>
+              <span class="tag tag-bdu">BDU:2024-02761</span>
+              <span class="tag tag-status">Analyzed</span>
+            </div>
+            <p class="title">PAN-OS GlobalProtect — command injection / RCE as root (unauthenticated)</p>
+            <div class="meta-grid">
+              <div class="meta-item"><div class="k">Опубликовано</div><div class="v">12.04.2024</div></div>
+              <div class="meta-item"><div class="k">Изменено</div><div class="v">01.09.2026</div></div>
+              <div class="meta-item"><div class="k">Источники</div><div class="v">NVD + KEV + BDU</div></div>
+              <div class="meta-item"><div class="k">Заявки</div><div class="v"><a href="tickets.html">T-1048</a></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-layout">
+          <!-- Левая колонка: описание + BDU switch + refs/CWE/CPE -->
+          <div class="stack">
+            <div class="panel">
+              <div class="panel-h">
+                <h2>Описание</h2>
+                <div class="source-toggle" role="tablist" aria-label="Источник описания">
+                  <button type="button" class="is-active" data-desc="nvd" aria-pressed="true">NVD</button>
+                  <button type="button" data-desc="bdu" aria-pressed="false">BDU</button>
+                </div>
+              </div>
+              <div class="panel-b">
+                <div class="desc-pane is-active" data-desc-pane="nvd">
+                  <p class="desc-text">
+                    A command injection as a result of arbitrary file creation vulnerability in the GlobalProtect feature
+                    of Palo Alto Networks PAN-OS software for specific PAN-OS versions and distinct feature configurations
+                    may enable an unauthenticated attacker to execute arbitrary code with root privileges on the firewall.
+                  </p>
+                  <div class="alert warn" style="margin-top:12px;margin-bottom:0">
+                    <b>CISA KEV</b> · добавлено 12.04.2024 · due 19.04.2024 · ransomware: Known
+                  </div>
+                </div>
+                <div class="desc-pane" data-desc-pane="bdu">
+                  <div class="bdu-meta">
+                    <div class="meta-item"><div class="k">Идентификатор</div><div class="v" style="font-family:var(--mono)">BDU:2024-02761</div></div>
+                    <div class="meta-item"><div class="k">Уровень опасности</div><div class="v">Критический</div></div>
+                    <div class="meta-item"><div class="k">Связка CVE</div><div class="v">CVE-2024-3400</div></div>
+                    <div class="meta-item"><div class="k">Статус</div><div class="v">Подтверждена вендором</div></div>
+                  </div>
+                  <p class="desc-text" style="margin-top:12px">
+                    Уязвимость внедрения команд в компоненте GlobalProtect ПО PAN-OS (Palo Alto Networks).
+                    Неаутентифицированный злоумышленник может выполнить произвольный код с правами root на МЭ.
+                    Рекомендуется установка обновлений безопасности вендора.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-h"><h2>Weaknesses · CPE · References</h2></div>
+              <div class="panel-b stack" style="gap:14px">
+                <div>
+                  <div class="section-label">CWE</div>
+                  <span class="tag tag-info">CWE-77 Command Injection</span>
+                  <span class="tag tag-info">CWE-20 Improper Input Validation</span>
+                </div>
+                <div>
+                  <div class="section-label">CPE / Configurations</div>
+                  <div class="code-block code-block-sm">cpe:2.3:o:paloaltonetworks:pan-os:10.2.0:*:*:*:*:*:*:*
+cpe:2.3:o:paloaltonetworks:pan-os:11.0.0:*:*:*:*:*:*:*</div>
+                </div>
+                <div>
+                  <div class="section-label">References</div>
+                  <ul class="ref-list compact">
+                    <li><span class="tag tag-info">Vendor</span><a href="#">security.paloaltonetworks.com/CVE-2024-3400</a></li>
+                    <li><span class="tag tag-info">CISA</span><a href="#">cisa.gov/known-exploited-vulnerabilities-catalog</a></li>
+                    <li><span class="tag tag-bdu">BDU</span><a href="#">bdu.fstec.ru/vul/2024-02761</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Правая колонка: отдельная форма CVSS + заявки/история -->
+          <div class="stack">
+            <div class="panel cvss-form">
+              <div class="panel-h">
+                <h2>Метрики CVSS</h2>
+                <span class="sub">отдельный блок · переключение версий</span>
+              </div>
+              <div class="cvss-version-bar" data-local-tabs>
+                <button class="tab is-active" type="button" data-tab="v31">3.1</button>
+                <button class="tab" type="button" data-tab="v30">3.0</button>
+                <button class="tab" type="button" data-tab="v2">2.0</button>
+                <button class="tab" type="button" data-tab="v40">4.0</button>
+              </div>
+
+              <div class="panel-b">
+                <div class="cvss-pane is-active" data-pane="v31">
+                  <div class="cvss-form-head">
+                    <div class="cvss-score crit">9.8</div>
+                    <div class="grow">
+                      <div class="cvss-form-title">Critical · Primary (NVD)</div>
+                      <div class="vector">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</div>
+                    </div>
+                  </div>
+                  <div class="cvss-fields">
+                    <div class="cvss-field"><span class="k">Attack Vector</span><span class="v">Network</span></div>
+                    <div class="cvss-field"><span class="k">Attack Complexity</span><span class="v">Low</span></div>
+                    <div class="cvss-field"><span class="k">Privileges</span><span class="v">None</span></div>
+                    <div class="cvss-field"><span class="k">User Interaction</span><span class="v">None</span></div>
+                    <div class="cvss-field"><span class="k">Scope</span><span class="v">Unchanged</span></div>
+                    <div class="cvss-field"><span class="k">C / I / A</span><span class="v">H / H / H</span></div>
+                  </div>
+                  <div class="metric-bar">
+                    <div class="row-m"><span>Base</span><div class="track"><div class="fill" style="width:98%;background:var(--sev-crit)"></div></div><span>9.8</span></div>
+                    <div class="row-m"><span>Exploitability</span><div class="track"><div class="fill" style="width:90%"></div></div><span>3.9</span></div>
+                    <div class="row-m"><span>Impact</span><div class="track"><div class="fill" style="width:86%;background:var(--sev-high)"></div></div><span>5.9</span></div>
+                  </div>
+                  <div class="cvss-secondary">
+                    <div class="section-label">Secondary (Vendor)</div>
+                    <div class="vector">9.8 · Palo Alto Networks · тот же вектор</div>
+                  </div>
+                </div>
+
+                <div class="cvss-pane" data-pane="v30">
+                  <div class="cvss-form-head">
+                    <div class="cvss-score crit">9.8</div>
+                    <div class="grow">
+                      <div class="cvss-form-title">Critical · CVSS 3.0 · NVD</div>
+                      <div class="vector">CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</div>
+                    </div>
+                  </div>
+                  <div class="cvss-fields">
+                    <div class="cvss-field"><span class="k">Attack Vector</span><span class="v">Network</span></div>
+                    <div class="cvss-field"><span class="k">Attack Complexity</span><span class="v">Low</span></div>
+                    <div class="cvss-field"><span class="k">Privileges</span><span class="v">None</span></div>
+                    <div class="cvss-field"><span class="k">User Interaction</span><span class="v">None</span></div>
+                    <div class="cvss-field"><span class="k">Scope</span><span class="v">Unchanged</span></div>
+                    <div class="cvss-field"><span class="k">C / I / A</span><span class="v">H / H / H</span></div>
+                  </div>
+                </div>
+
+                <div class="cvss-pane" data-pane="v2">
+                  <div class="cvss-form-head">
+                    <div class="cvss-score high">10.0</div>
+                    <div class="grow">
+                      <div class="cvss-form-title">CVSS 2.0 · Primary · NVD</div>
+                      <div class="vector">AV:N/AC:L/Au:N/C:C/I:C/A:C</div>
+                    </div>
+                  </div>
+                  <div class="cvss-fields">
+                    <div class="cvss-field"><span class="k">Access Vector</span><span class="v">Network</span></div>
+                    <div class="cvss-field"><span class="k">Access Complexity</span><span class="v">Low</span></div>
+                    <div class="cvss-field"><span class="k">Authentication</span><span class="v">None</span></div>
+                    <div class="cvss-field"><span class="k">Conf. Impact</span><span class="v">Complete</span></div>
+                    <div class="cvss-field"><span class="k">Integ. Impact</span><span class="v">Complete</span></div>
+                    <div class="cvss-field"><span class="k">Avail. Impact</span><span class="v">Complete</span></div>
+                  </div>
+                </div>
+
+                <div class="cvss-pane" data-pane="v40">
+                  <div class="empty" style="padding:28px 12px">CVSS 4.0 в источнике отсутствует</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-h"><h2>Связанные заявки</h2><a class="btn btn-sm btn-primary" href="tickets.html">Новая</a></div>
+              <div class="table-wrap">
+                <table class="data">
+                  <thead><tr><th>№</th><th>Статус</th><th>Исполнитель</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td class="mono"><a href="tickets.html">T-1048</a></td>
+                      <td><span class="tag tag-status">in_progress</span></td>
+                      <td>С. Петров</td>
+                    </tr>
+                    <tr>
+                      <td class="mono"><a href="tickets.html">T-0991</a></td>
+                      <td><span class="tag tag-ok">closed</span></td>
+                      <td>М. Орлова</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-h"><h2>История</h2></div>
+              <div class="panel-b" style="padding-top:8px;padding-bottom:8px">
+                <div class="timeline">
+                  <div class="tl-item"><div class="mark"></div><div><div class="when">01.09.2026 21:12</div><div class="what">NVD sync: references, lastModified</div></div></div>
+                  <div class="tl-item"><div class="mark"></div><div><div class="when">15.08.2026 09:40</div><div class="what">BDU: привязан BDU:2024-02761</div></div></div>
+                  <div class="tl-item"><div class="mark"></div><div><div class="when">12.04.2024 18:05</div><div class="what">CISA KEV: добавлено в каталог</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="js/tip-ui.js"></script>
+  <script>
+    (function () {
+      document.querySelectorAll(".source-toggle button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var id = btn.getAttribute("data-desc");
+          document.querySelectorAll(".source-toggle button").forEach(function (b) {
+            b.classList.toggle("is-active", b === btn);
+            b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+          });
+          document.querySelectorAll("[data-desc-pane]").forEach(function (pane) {
+            pane.classList.toggle("is-active", pane.getAttribute("data-desc-pane") === id);
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

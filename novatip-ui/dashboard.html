@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Дашборд · NovaTIP</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">NT</div>
+        <div class="brand-text"><strong>NovaTIP</strong><span>АО «Пример»</span></div>
+      </div>
+      <nav class="nav">
+        <div class="nav-section">Обзор</div>
+        <a class="nav-item is-active" href="dashboard.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h6V4H4v9zm10 7h6V4h-6v16zM4 20h6v-5H4v5zm10-9h6V4h-6v7z"/></svg>Дашборд</a>
+        <div class="nav-section">Threat Intelligence</div>
+        <a class="nav-item" href="vulns.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/></svg>Уязвимости<span class="badge">24</span></a>
+        <a class="nav-item" href="tickets.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M8 9h8M8 13h5"/></svg>Заявки<span class="badge">7</span></a>
+        <div class="nav-section">Администрирование</div>
+        <a class="nav-item" href="settings.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/></svg>Настройки</a>
+      </nav>
+      <div class="sidebar-foot"><div class="lic"><span class="dot"></span> Online · ACME-*</div>LIC-2026-000142</div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="crumbs"><a href="index.html">Шаблоны</a><span>/</span><strong>Дашборд</strong></div>
+        <div class="topbar-spacer"></div>
+        <div class="search"><input placeholder="CVE, BDU, ACME-…, заявка…" /><kbd>/</kbd></div>
+        <div class="top-actions">
+          <a class="btn btn-sm" href="settings.html#sync">Синхронизации</a>
+          <div class="user-chip"><div class="avatar">АИ</div><div class="user-meta"><b>А. Иванов</b><span>Аналитик</span></div></div>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1>Дашборд</h1>
+            <p>Сводка по каталогу (NVD + локальные ACME-*), KEV и заявкам. Обновлено 02.09.2026 21:40.</p>
+          </div>
+          <div class="page-actions">
+            <a class="btn btn-primary" href="vulns.html">Открыть каталог</a>
+          </div>
+        </div>
+
+        <div class="grid-4" style="margin-bottom:12px">
+          <div class="panel kpi kpi-crit"><div class="label">Critical</div><div class="value">18</div><div class="delta up">+3 за 7 дней</div></div>
+          <div class="panel kpi kpi-high"><div class="label">High</div><div class="value">142</div><div class="delta up">+11 за 7 дней</div></div>
+          <div class="panel kpi kpi-accent"><div class="label">В CISA KEV</div><div class="value">27</div><div class="delta">открытых заявок: 9</div></div>
+          <div class="panel kpi kpi-ok"><div class="label">Локальные ACME-*</div><div class="value">14</div><div class="delta">из них без заявки: 3</div></div>
+        </div>
+
+        <div class="grid-3" style="margin-bottom:12px">
+          <div class="panel">
+            <div class="panel-h"><h2>Новые записи <span class="sub">14 дней</span></h2></div>
+            <div class="panel-b">
+              <div class="bar-chart" style="margin-bottom:22px">
+                <div class="bar" style="height:35%" data-l="19"></div>
+                <div class="bar" style="height:48%" data-l="20"></div>
+                <div class="bar" style="height:70%" data-l="22"></div>
+                <div class="bar" style="height:55%" data-l="23"></div>
+                <div class="bar" style="height:88%" data-l="24"></div>
+                <div class="bar" style="height:62%" data-l="25"></div>
+                <div class="bar" style="height:75%" data-l="28"></div>
+                <div class="bar" style="height:80%" data-l="01"></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h2>Severity</h2></div>
+            <div class="panel-b">
+              <div class="sev-stack">
+                <div class="sev-row"><span>Critical</span><div class="sev-track"><div class="sev-fill crit" style="width:12%"></div></div><span>18</span></div>
+                <div class="sev-row"><span>High</span><div class="sev-track"><div class="sev-fill high" style="width:48%"></div></div><span>142</span></div>
+                <div class="sev-row"><span>Medium</span><div class="sev-track"><div class="sev-fill med" style="width:78%"></div></div><span>890</span></div>
+                <div class="sev-row"><span>Low</span><div class="sev-track"><div class="sev-fill low" style="width:35%"></div></div><span>412</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h2>Источники</h2><a href="settings.html#sync">Управление</a></div>
+            <div class="panel-b stack">
+              <div class="alert ok">NVD — OK · 02.09 21:12</div>
+              <div class="alert ok">CISA KEV — OK · 02.09 21:15</div>
+              <div class="alert warn">БДУ — задержка · продолжить в настройках</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-h"><h2>Требуют внимания</h2><a href="vulns.html">Каталог</a></div>
+            <div class="table-wrap">
+              <table class="data">
+                <thead><tr><th>ID</th><th>Severity</th><th>Метки</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono"><a href="vuln-detail.html">CVE-2024-3400</a></td><td><span class="tag tag-crit">9.8</span></td><td><span class="tag tag-kev">KEV</span></td></tr>
+                  <tr><td class="mono"><a href="vuln-detail.html">ACME-2026-0042</a></td><td><span class="tag tag-high">8.1</span></td><td><span class="tag tag-int">LOCAL</span></td></tr>
+                  <tr><td class="mono"><a href="vuln-detail.html">CVE-2025-24813</a></td><td><span class="tag tag-crit">9.8</span></td><td><span class="tag tag-kev">KEV</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h2>Заявки</h2><a href="tickets.html">Все</a></div>
+            <div class="table-wrap">
+              <table class="data">
+                <thead><tr><th>№</th><th>Статус</th><th>Ожидает</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono"><a href="tickets.html">T-1048</a></td><td><span class="tag tag-status">in_progress</span></td><td>исполнитель</td></tr>
+                  <tr><td class="mono"><a href="tickets.html">T-1020</a></td><td><span class="tag tag-ok">resolved</span></td><td>подтверждение закрытия</td></tr>
+                  <tr><td class="mono"><a href="tickets.html">T-1042</a></td><td><span class="tag tag-status">triage</span></td><td>назначение</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

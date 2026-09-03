@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Настройки · NovaTIP</title>
+  <link rel="stylesheet" href="css/tip-console.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">NT</div>
+        <div class="brand-text"><strong>NovaTIP</strong><span>АО «Пример»</span></div>
+      </div>
+      <nav class="nav">
+        <a class="nav-item" href="dashboard.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h6V4H4v9zm10 7h6V4h-6v16z"/></svg>Дашборд</a>
+        <a class="nav-item" href="vulns.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/></svg>Уязвимости</a>
+        <a class="nav-item" href="tickets.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="1.5"/></svg>Заявки</a>
+        <a class="nav-item is-active" href="settings.html"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/></svg>Настройки</a>
+      </nav>
+      <div class="sidebar-foot"><div class="lic"><span class="dot"></span> Online</div>platform_admin</div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="crumbs"><a href="dashboard.html">Дашборд</a><span>/</span><strong>Настройки</strong></div>
+        <div class="topbar-spacer"></div>
+        <div class="user-chip"><div class="avatar">АД</div><div class="user-meta"><b>Админ</b><span>platform_admin</span></div></div>
+      </header>
+
+      <div class="content">
+        <div class="page-head">
+          <div>
+            <h1>Настройки</h1>
+            <p>Каждый раздел — отдельная вкладка. Синхронизации перенесены сюда из отдельного пункта меню.</p>
+          </div>
+        </div>
+
+        <div class="settings-layout">
+          <aside class="panel settings-nav" data-tabs="settings">
+            <div class="panel-b" style="padding:8px;display:flex;flex-direction:column;gap:2px">
+              <a class="is-active" href="#org" data-tab="org">Организация и ID</a>
+              <a href="#brand" data-tab="brand">Внешний вид / Login</a>
+              <a href="#license" data-tab="license">Лицензия</a>
+              <a href="#sources" data-tab="sources">Источники угроз</a>
+              <a href="#sync" data-tab="sync">Синхронизации</a>
+              <a href="#tickets" data-tab="tickets">Заявки и SLA</a>
+              <a href="#mail" data-tab="mail">Почта</a>
+              <a href="#tg" data-tab="tg">Telegram</a>
+              <a href="#users" data-tab="users">Пользователи</a>
+              <a href="#audit" data-tab="audit">Аудит</a>
+            </div>
+          </aside>
+
+          <div class="stack">
+            <!-- ORG -->
+            <div class="panel settings-pane is-active" data-tab-pane="settings" id="org" data-pane-id="org">
+              <div class="panel-h"><h2>Организация и локальные ID</h2><button class="btn btn-sm btn-primary" type="button">Сохранить</button></div>
+              <div class="panel-b stack">
+                <div class="grid-2">
+                  <div class="field"><label>Название</label><input class="input" value="АО «Пример»" /></div>
+                  <div class="field">
+                    <label>Префикс локальных уязвимостей</label>
+                    <input class="input" value="ACME" style="font-family:var(--mono);text-transform:uppercase" />
+                    <span class="hint">Формат: ACME-2026-0042. Смена префикса не переименовывает старые ID.</span>
+                  </div>
+                </div>
+                <div class="id-preview">Следующий ID: ACME-2026-0043</div>
+              </div>
+            </div>
+
+            <!-- BRAND -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="brand" data-pane-id="brand">
+              <div class="panel-h"><h2>Внешний вид и страница входа</h2><button class="btn btn-sm btn-primary" type="button">Сохранить</button></div>
+              <div class="panel-b stack">
+                <div class="logo-upload">
+                  <div class="preview">NT</div>
+                  <div class="grow">
+                    <div style="font-weight:650;margin-bottom:4px">Логотип (слева на login и в сайдбаре)</div>
+                    <button class="btn btn-sm" type="button">Загрузить PNG/SVG</button>
+                  </div>
+                </div>
+                <div class="field"><label>Заголовок login</label><input class="input" value="Управление уязвимостями и угрозами в одном контуре" /></div>
+                <div class="field"><label>Текст информации</label><textarea class="textarea">Каталог NVD / KEV / БДУ, локальные уязвимости…</textarea></div>
+                <a class="btn btn-sm" href="login.html">Открыть превью login</a>
+              </div>
+            </div>
+
+            <!-- LICENSE -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="license" data-pane-id="license">
+              <div class="panel-h"><h2>Лицензия</h2><span class="tag tag-ok">valid · online</span></div>
+              <div class="panel-b">
+                <div class="grid-3">
+                  <div class="meta-item"><div class="k">ID</div><div class="v" style="font-family:var(--mono);font-size:12px">LIC-2026-000142</div></div>
+                  <div class="meta-item"><div class="k">Издание</div><div class="v">Enterprise</div></div>
+                  <div class="meta-item"><div class="k">Места</div><div class="v">12 / 50</div></div>
+                  <div class="meta-item"><div class="k">Клиент</div><div class="v">АО «Пример»</div></div>
+                  <div class="meta-item"><div class="k">Истекает</div><div class="v">31.08.2027</div></div>
+                  <div class="meta-item"><div class="k">Grace offline</div><div class="v">14 суток</div></div>
+                </div>
+                <div class="row" style="margin-top:12px">
+                  <button class="btn btn-sm" type="button">Проверить online</button>
+                  <button class="btn btn-sm" type="button">Загрузить .novalic</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SOURCES -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="sources" data-pane-id="sources">
+              <div class="panel-h"><h2>Источники угроз</h2><button class="btn btn-sm btn-primary" type="button">Сохранить</button></div>
+              <div class="panel-b stack">
+                <div class="grid-2">
+                  <div class="field"><label>NVD API key</label><input class="input" type="password" value="••••••••••••" /></div>
+                  <div class="field"><label>Расписание полной sync</label><select class="select"><option>Ежедневно 02:00</option><option>Каждые 12 ч</option></select></div>
+                </div>
+                <div class="check-list">
+                  <label><input class="checkbox" type="checkbox" checked /> CISA KEV</label>
+                  <label><input class="checkbox" type="checkbox" checked /> БДУ ФСТЭК</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- SYNC (moved here) -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="sync" data-pane-id="sync">
+              <div class="panel-h"><h2>Синхронизации</h2><button class="btn btn-sm btn-primary" type="button">Запустить все</button></div>
+              <div class="panel-b stack">
+                <div class="grid-3">
+                  <div class="meta-item">
+                    <div class="k">NVD <span class="tag tag-ok">OK</span></div>
+                    <div class="v">100%</div>
+                    <div class="sev-track" style="margin-top:8px"><div class="sev-fill" style="width:100%;background:var(--ok)"></div></div>
+                    <div style="font-size:11px;color:var(--text-3);margin-top:6px">02.09 21:12 · checkpoint OK</div>
+                    <button class="btn btn-sm" type="button" style="margin-top:8px">Инкремент</button>
+                  </div>
+                  <div class="meta-item">
+                    <div class="k">CISA KEV <span class="tag tag-ok">OK</span></div>
+                    <div class="v">100%</div>
+                    <div class="sev-track" style="margin-top:8px"><div class="sev-fill" style="width:100%;background:var(--ok)"></div></div>
+                    <div style="font-size:11px;color:var(--text-3);margin-top:6px">02.09 21:15</div>
+                    <button class="btn btn-sm" type="button" style="margin-top:8px">Запустить</button>
+                  </div>
+                  <div class="meta-item">
+                    <div class="k">БДУ <span class="tag tag-high">paused</span></div>
+                    <div class="v">62%</div>
+                    <div class="sev-track" style="margin-top:8px"><div class="sev-fill high" style="width:62%"></div></div>
+                    <div style="font-size:11px;color:var(--warn);margin-top:6px">Timeout · можно продолжить</div>
+                    <button class="btn btn-sm btn-primary" type="button" style="margin-top:8px">Продолжить</button>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table class="data">
+                    <thead><tr><th>Время</th><th>Источник</th><th>Статус</th><th>Ошибка</th></tr></thead>
+                    <tbody>
+                      <tr><td class="muted">02.09 21:18</td><td>BDU</td><td><span class="tag tag-high">failed</span></td><td class="mono" style="font-size:11px">ReadTimeout</td></tr>
+                      <tr><td class="muted">02.09 21:15</td><td>KEV</td><td><span class="tag tag-ok">success</span></td><td class="muted">—</td></tr>
+                      <tr><td class="muted">02.09 21:12</td><td>NVD</td><td><span class="tag tag-ok">success</span></td><td class="muted">—</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- TICKETS SETTINGS -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="tickets" data-pane-id="tickets">
+              <div class="panel-h"><h2>Заявки и SLA</h2><button class="btn btn-sm btn-primary" type="button">Сохранить</button></div>
+              <div class="panel-b stack">
+                <div class="alert info">Закрытие заявки всегда требует подтверждения постановщика или роли verifier. Исполнитель может только перевести в resolved.</div>
+                <div class="grid-2">
+                  <div class="field"><label>SLA по умолчанию P1</label><input class="input" value="24 часа" /></div>
+                  <div class="field"><label>SLA по умолчанию P2</label><input class="input" value="72 часа" /></div>
+                  <div class="field"><label>Кто подтверждает закрытие</label>
+                    <select class="select"><option>Постановщик или verifier</option><option>Только постановщик</option><option>Любой analyst</option></select>
+                  </div>
+                  <div class="field"><label>Разрешить admin force-close</label>
+                    <select class="select"><option>Да (с аудитом)</option><option>Нет</option></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MAIL -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="mail" data-pane-id="mail">
+              <div class="panel-h"><h2>Почта</h2><button class="btn btn-sm" type="button">Тестовое письмо</button></div>
+              <div class="panel-b grid-2">
+                <div class="field"><label>Host</label><input class="input" value="mail.example.local" /></div>
+                <div class="field"><label>Port</label><input class="input" value="587" /></div>
+                <div class="field"><label>From</label><input class="input" value="novatip@example.local" /></div>
+                <div class="field"><label>User</label><input class="input" value="novatip-notify" /></div>
+              </div>
+            </div>
+
+            <!-- TG -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="tg" data-pane-id="tg">
+              <div class="panel-h"><h2>Telegram</h2><button class="btn btn-sm" type="button">Тест</button></div>
+              <div class="panel-b grid-2">
+                <div class="field"><label>Bot token</label><input class="input" type="password" value="••••••••" /></div>
+                <div class="field"><label>chat_id</label><input class="input" value="-1001234567890" /></div>
+              </div>
+            </div>
+
+            <!-- USERS -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="users" data-pane-id="users">
+              <div class="panel-h"><h2>Пользователи</h2><button class="btn btn-sm btn-primary" type="button">Добавить</button></div>
+              <div class="table-wrap">
+                <table class="data">
+                  <thead><tr><th>Логин</th><th>ФИО</th><th>Роли</th><th>Статус</th></tr></thead>
+                  <tbody>
+                    <tr><td>admin</td><td>Админ</td><td>platform_admin</td><td><span class="tag tag-ok">active</span></td></tr>
+                    <tr><td>a.ivanov</td><td>А. Иванов</td><td>analyst, verifier</td><td><span class="tag tag-ok">active</span></td></tr>
+                    <tr><td>s.petrov</td><td>С. Петров</td><td>ticket_assignee</td><td><span class="tag tag-ok">active</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- AUDIT -->
+            <div class="panel settings-pane" data-tab-pane="settings" id="audit" data-pane-id="audit">
+              <div class="panel-h"><h2>Журнал аудита</h2></div>
+              <div class="table-wrap">
+                <table class="data">
+                  <thead><tr><th>Время</th><th>Кто</th><th>Действие</th><th>Объект</th></tr></thead>
+                  <tbody>
+                    <tr><td class="muted">02.09 21:40</td><td>admin</td><td>settings.update</td><td>org_prefix</td></tr>
+                    <tr><td class="muted">02.09 16:40</td><td>a.ivanov</td><td>ticket.assign</td><td>T-1048</td></tr>
+                    <tr><td class="muted">01.09 15:02</td><td>a.ivanov</td><td>ticket.create</td><td>T-1048</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="js/tip-ui.js"></script>
+</body>
+</html>
