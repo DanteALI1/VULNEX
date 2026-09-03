@@ -2,7 +2,7 @@
 {% block wizard_content %}
 <form method="post" enctype="multipart/form-data" class="panel">
   {% csrf_token %}
-  <div class="panel-h"><h2>Оформление</h2><span class="sub">Логотип и тексты login</span></div>
+  <div class="panel-h"><h2>Брендинг</h2><span class="sub">Логотип и тексты login</span></div>
   <div class="panel-b stack">
     <div class="field"><label>Название продукта</label><input class="input" name="product_name" value="{{ settings_obj.product_name|default:'VULNDB' }}" /></div>
     <div class="field"><label>Заголовок на странице входа</label><input class="input" name="login_title" value="{{ settings_obj.login_title }}" /></div>

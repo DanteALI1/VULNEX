@@ -2,13 +2,35 @@
 {% block wizard_content %}
 <form method="post" class="panel">
   {% csrf_token %}
-  <div class="panel-h"><h2>Источники данных</h2><span class="sub">NVD · KEV · БДУ</span></div>
+  <div class="panel-h"><h2>Источники данных</h2><span class="sub">NVD · БДУ ФСТЭК · CISA KEV</span></div>
   <div class="panel-b stack">
-    <div class="field"><label>NVD API Key (опционально)</label><input class="input" name="nvd_api_key" value="{{ settings_obj.nvd_api_key }}" /></div>
-    <label class="row"><input class="checkbox" type="checkbox" name="nvd_enabled" {% if settings_obj.nvd_enabled %}checked{% endif %} /> NVD</label>
-    <label class="row"><input class="checkbox" type="checkbox" name="kev_enabled" {% if settings_obj.kev_enabled %}checked{% endif %} /> CISA KEV</label>
-    <label class="row"><input class="checkbox" type="checkbox" name="bdu_enabled" {% if settings_obj.bdu_enabled %}checked{% endif %} /> БДУ ФСТЭК</label>
-    <div class="field"><label>Расписание (подсказка)</label><input class="input" name="sync_cron_hint" value="{{ settings_obj.sync_cron_hint }}" /></div>
+    <div class="alert info">
+      <b>NVD</b> — API-ключ получаете самостоятельно на nvd.nist.gov и вставляете сюда.
+      <b>БДУ</b> — система скачает XLSX с сайта ФСТЭК, распарсит все поля в карточки.
+      <b>CISA KEV</b> — достаточно включить галочку (JSON-фид).
+    </div>
+
+    <div class="settings-group">
+      <h3>NVD (NIST)</h3>
+      <label class="row"><input class="checkbox" type="checkbox" name="nvd_enabled" {% if settings_obj.nvd_enabled %}checked{% endif %} /> Включить синхронизацию NVD</label>
+      <div class="field"><label>NVD API Key</label><input class="input" name="nvd_api_key" value="{{ settings_obj.nvd_api_key }}" placeholder="вставьте ключ" autocomplete="off" /></div>
+      <div class="field"><label>Интервал синхронизации (минут)</label><input class="input" type="number" min="15" name="nvd_sync_interval_minutes" value="{{ settings_obj.nvd_sync_interval_minutes|default:60 }}" /></div>
+    </div>
+
+    <div class="settings-group">
+      <h3>БДУ ФСТЭК (XLSX)</h3>
+      <label class="row"><input class="checkbox" type="checkbox" name="bdu_enabled" {% if settings_obj.bdu_enabled %}checked{% endif %} /> Включить синхронизацию БДУ</label>
+      <div class="field"><label>URL файла vullist.xlsx</label><input class="input" name="bdu_xlsx_url" value="{{ settings_obj.bdu_xlsx_url|default:'https://bdu.fstec.ru/files/documents/vullist.xlsx' }}" /></div>
+      <label class="row"><input class="checkbox" type="checkbox" name="bdu_verify_ssl" {% if settings_obj.bdu_verify_ssl %}checked{% endif %} /> Проверять SSL-сертификат ФСТЭК</label>
+      <div class="field"><label>Интервал синхронизации (минут)</label><input class="input" type="number" min="60" name="bdu_sync_interval_minutes" value="{{ settings_obj.bdu_sync_interval_minutes|default:1440 }}" /></div>
+      <p class="hint">Поля XLSX (идентификатор, описание, вендор, CVSS, CWE, CVE, меры устранения и др.) сохраняются в карточке.</p>
+    </div>
+
+    <div class="settings-group">
+      <h3>CISA KEV</h3>
+      <label class="row"><input class="checkbox" type="checkbox" name="kev_enabled" {% if settings_obj.kev_enabled %}checked{% endif %} /> Включить Known Exploited Vulnerabilities (JSON)</label>
+      <div class="field"><label>Интервал (минут)</label><input class="input" type="number" min="60" name="kev_sync_interval_minutes" value="{{ settings_obj.kev_sync_interval_minutes|default:360 }}" /></div>
+    </div>
   </div>
   <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
     <button class="btn" type="submit" name="action" value="back">Назад</button>

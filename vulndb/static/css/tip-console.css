@@ -1803,3 +1803,155 @@ table.data .muted {
     padding: 12px;
   }
 }
+
+/* —— Settings layout (grouped) —— */
+.settings-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.settings-nav {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 12px;
+}
+.settings-nav-group {
+  margin: 10px 8px 4px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.settings-nav a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+}
+.settings-nav a:hover { background: var(--bg-muted); text-decoration: none; }
+.settings-nav a.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font-weight: 600;
+}
+.settings-content { padding: 0; overflow: hidden; }
+.settings-pane { padding: 18px 20px 22px; }
+.settings-pane-h h2 { margin: 0 0 4px; font-size: 16px; }
+.settings-pane-h p { margin: 0 0 16px; color: var(--text-2); font-size: 12.5px; }
+.settings-form { display: flex; flex-direction: column; gap: 12px; max-width: 720px; }
+.settings-group {
+  border: 1px solid var(--border-soft);
+  background: var(--bg-panel-2);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settings-group h3 { margin: 0; font-size: 13px; }
+.hint { margin: 0; font-size: 12px; color: var(--text-3); }
+
+/* —— System metrics —— */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.metric-card {
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.metric-card .label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+.metric-value { font-size: 28px; font-weight: 650; margin: 4px 0 8px; font-variant-numeric: tabular-nums; }
+.metric-bar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.metric-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #0a7ab8, #1aa0e0);
+}
+.metric-sub { margin-top: 8px; font-size: 11px; color: var(--text-3); }
+
+/* —— Auth full-right panel —— */
+.auth-page-wide { grid-template-columns: 0.95fr 1.05fr; }
+.auth-panel-fill {
+  place-items: stretch;
+  padding: 0;
+  background: #eef2f6;
+}
+.auth-panel-inner {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+}
+.auth-card-fill {
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 56px clamp(32px, 8vw, 96px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.auth-card-fill .stack-form { max-width: 420px; }
+.auth-card-fill h2 { font-size: 26px; }
+.input-lg, .btn-lg { height: 42px; }
+.auth-sso-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; max-width: 480px; }
+.auth-sso-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.sso-ico {
+  width: 20px; height: 20px; border-radius: 3px;
+  background: #1b2430; color: #fff;
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 700;
+}
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 4px 0 16px; max-width: 420px;
+  color: var(--text-3); font-size: 12px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ""; flex: 1; height: 1px; background: var(--border);
+}
+.auth-sso-hint {
+  margin-bottom: 14px; max-width: 480px;
+  font-size: 12.5px; color: var(--text-2);
+  padding: 10px 12px; background: var(--accent-soft); border-radius: var(--radius);
+}
+.auth-best-practices { margin-top: 6px; line-height: 1.4; }
+
+@media (max-width: 980px) {
+  .settings-layout { grid-template-columns: 1fr; }
+  .settings-nav { position: static; flex-direction: row; flex-wrap: wrap; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+  .auth-page-wide { grid-template-columns: 1fr; }
+  .auth-card-fill { min-height: auto; padding: 32px 24px; }
+}
+@media (max-width: 640px) {
+  .metrics-grid { grid-template-columns: 1fr; }
+}

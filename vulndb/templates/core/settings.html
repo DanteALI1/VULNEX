@@ -2,23 +2,34 @@
 {% block page_title %}Настройки{% endblock %}
 {% block crumbs %}<a href="{% url 'dashboard' %}">Дашборд</a><span>/</span><strong>Настройки</strong>{% endblock %}
 {% block content %}
-<div class="page-head"><div><h1>Настройки</h1><p>Разделы вкладками. Синхронизации — здесь же, не отдельным пунктом меню.</p></div></div>
+<div class="page-head"><div><h1>Настройки</h1><p>Разделы сгруппированы по зонам ответственности. Синхронизации — внутри источников.</p></div></div>
 
-<div class="panel">
-  <div class="settings-tabs" data-tabs="settings">
+<div class="settings-layout">
+  <nav class="settings-nav" data-tabs="settings">
+    <div class="settings-nav-group">Организация</div>
     <a href="#org" data-tab="org" class="is-active">Организация</a>
-    <a href="#branding" data-tab="branding">Оформление</a>
-    <a href="#sources" data-tab="sources">Источники</a>
-    <a href="#sync" data-tab="sync">Синхронизации</a>
-    <a href="#mail" data-tab="mail">Почта</a>
-    <a href="#telegram" data-tab="telegram">Telegram</a>
-    <a href="#license" data-tab="license">Лицензия</a>
-    <a href="#database" data-tab="database">База данных</a>
-  </div>
+    <a href="#branding" data-tab="branding">Брендинг</a>
 
-  <div class="panel-b">
-    <section id="org" data-tab-pane="settings" data-pane-id="org" class="is-active stack">
-      <form method="post" class="stack-form">
+    <div class="settings-nav-group">Данные</div>
+    <a href="#sources" data-tab="sources">Источники и sync</a>
+    <a href="#database" data-tab="database">База данных</a>
+
+    <div class="settings-nav-group">Доступ</div>
+    <a href="#auth" data-tab="auth">Аутентификация</a>
+    <a href="#license" data-tab="license">Лицензия</a>
+
+    <div class="settings-nav-group">Уведомления</div>
+    <a href="#mail" data-tab="mail">Почта / Exchange</a>
+    <a href="#telegram" data-tab="telegram">Telegram</a>
+
+    <div class="settings-nav-group">Платформа</div>
+    <a href="#system" data-tab="system">Система</a>
+  </nav>
+
+  <div class="settings-content panel">
+    <section id="org" data-tab-pane="settings" data-pane-id="org" class="is-active settings-pane">
+      <div class="settings-pane-h"><h2>Организация</h2><p>Имя площадки и префикс локальных ID.</p></div>
+      <form method="post" class="settings-form">
         {% csrf_token %}<input type="hidden" name="section" value="org" />
         <div class="field"><label>Организация</label><input class="input" name="organization_name" value="{{ settings_obj.organization_name }}" /></div>
         <div class="field"><label>Префикс ID</label><input class="input" name="local_id_prefix" value="{{ settings_obj.local_id_prefix }}" /></div>
@@ -26,8 +37,9 @@
       </form>
     </section>
 
-    <section id="branding" data-tab-pane="settings" data-pane-id="branding" class="stack" style="display:none">
-      <form method="post" enctype="multipart/form-data" class="stack-form">
+    <section id="branding" data-tab-pane="settings" data-pane-id="branding" class="settings-pane" style="display:none">
+      <div class="settings-pane-h"><h2>Брендинг</h2><p>Логотип и тексты страницы входа.</p></div>
+      <form method="post" enctype="multipart/form-data" class="settings-form">
         {% csrf_token %}<input type="hidden" name="section" value="branding" />
         <div class="field"><label>Продукт</label><input class="input" name="product_name" value="{{ settings_obj.product_name }}" /></div>
         <div class="field"><label>Заголовок login</label><input class="input" name="login_title" value="{{ settings_obj.login_title }}" /></div>
@@ -37,54 +49,146 @@
       </form>
     </section>
 
-    <section id="sources" data-tab-pane="settings" data-pane-id="sources" class="stack" style="display:none">
-      <form method="post" class="stack-form">
+    <section id="sources" data-tab-pane="settings" data-pane-id="sources" class="settings-pane" style="display:none">
+      <div class="settings-pane-h"><h2>Источники и синхронизация</h2><p>API-ключ NVD, XLSX БДУ, галочка KEV и ручные интервалы.</p></div>
+      <form method="post" class="settings-form">
         {% csrf_token %}<input type="hidden" name="section" value="sources" />
-        <div class="field"><label>NVD API Key</label><input class="input" name="nvd_api_key" value="{{ settings_obj.nvd_api_key }}" /></div>
-        <label class="row"><input class="checkbox" type="checkbox" name="nvd_enabled" {% if settings_obj.nvd_enabled %}checked{% endif %} /> NVD</label>
-        <label class="row"><input class="checkbox" type="checkbox" name="kev_enabled" {% if settings_obj.kev_enabled %}checked{% endif %} /> KEV</label>
-        <label class="row"><input class="checkbox" type="checkbox" name="bdu_enabled" {% if settings_obj.bdu_enabled %}checked{% endif %} /> БДУ</label>
+        <div class="settings-group">
+          <h3>NVD</h3>
+          <label class="row"><input class="checkbox" type="checkbox" name="nvd_enabled" {% if settings_obj.nvd_enabled %}checked{% endif %} /> Включено</label>
+          <div class="field"><label>API Key</label><input class="input" name="nvd_api_key" value="{{ settings_obj.nvd_api_key }}" /></div>
+          <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="15" name="nvd_sync_interval_minutes" value="{{ settings_obj.nvd_sync_interval_minutes }}" /></div>
+        </div>
+        <div class="settings-group">
+          <h3>БДУ ФСТЭК</h3>
+          <label class="row"><input class="checkbox" type="checkbox" name="bdu_enabled" {% if settings_obj.bdu_enabled %}checked{% endif %} /> Включено</label>
+          <div class="field"><label>URL XLSX</label><input class="input" name="bdu_xlsx_url" value="{{ settings_obj.bdu_xlsx_url }}" /></div>
+          <label class="row"><input class="checkbox" type="checkbox" name="bdu_verify_ssl" {% if settings_obj.bdu_verify_ssl %}checked{% endif %} /> Verify SSL</label>
+          <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="60" name="bdu_sync_interval_minutes" value="{{ settings_obj.bdu_sync_interval_minutes }}" /></div>
+        </div>
+        <div class="settings-group">
+          <h3>CISA KEV</h3>
+          <label class="row"><input class="checkbox" type="checkbox" name="kev_enabled" {% if settings_obj.kev_enabled %}checked{% endif %} /> Включить JSON-фид</label>
+          <div class="field"><label>Интервал (мин)</label><input class="input" type="number" min="60" name="kev_sync_interval_minutes" value="{{ settings_obj.kev_sync_interval_minutes }}" /></div>
+        </div>
         <button class="btn btn-primary" type="submit">Сохранить</button>
       </form>
-    </section>
 
-    <section id="sync" data-tab-pane="settings" data-pane-id="sync" class="stack" style="display:none">
-      <div class="stack">
+      <div class="settings-group" style="margin-top:18px">
+        <h3>Статус и ручной запуск</h3>
         {% for sync in syncs %}
         <div class="alert {% if sync.status == 'ok' %}ok{% elif sync.status == 'error' %}warn{% else %}info{% endif %}">
           <b>{{ sync.get_source_display }}</b> — {{ sync.status }}
           {% if sync.last_success_at %} · {{ sync.last_success_at|date:"d.m.Y H:i" }}{% endif %}
+          {% if sync.items_synced %} · записей: {{ sync.items_synced }}{% endif %}
           {% if sync.last_error %}<div>{{ sync.last_error }}</div>{% endif %}
         </div>
         {% empty %}
         <div class="alert info">Синхронизации ещё не выполнялись.</div>
         {% endfor %}
+        <form method="post" class="row" style="gap:8px;flex-wrap:wrap">
+          {% csrf_token %}<input type="hidden" name="section" value="sync" />
+          <button class="btn" name="run_sync" value="nvd" type="submit">Синхронизировать NVD</button>
+          <button class="btn" name="run_sync" value="bdu" type="submit">Скачать и разобрать БДУ</button>
+          <button class="btn" name="run_sync" value="kev" type="submit">Синхронизировать KEV</button>
+        </form>
       </div>
-      <form method="post" class="row" style="gap:8px;flex-wrap:wrap">
-        {% csrf_token %}<input type="hidden" name="section" value="sync" />
-        <button class="btn" name="run_sync" value="nvd" type="submit">Синхронизировать NVD</button>
-        <button class="btn" name="run_sync" value="kev" type="submit">Синхронизировать KEV</button>
-        <button class="btn" name="run_sync" value="bdu" type="submit">Синхронизировать БДУ</button>
+    </section>
+
+    <section id="database" data-tab-pane="settings" data-pane-id="database" class="settings-pane" style="display:none">
+      <div class="settings-pane-h"><h2>База данных</h2><p>Параметры подключения (пароль в `.env`).</p></div>
+      <div class="settings-form grid-2">
+        <div class="field"><label>Host</label><input class="input" value="{{ settings_obj.db_host }}" readonly /></div>
+        <div class="field"><label>Port</label><input class="input" value="{{ settings_obj.db_port }}" readonly /></div>
+        <div class="field"><label>DB</label><input class="input" value="{{ settings_obj.db_name }}" readonly /></div>
+        <div class="field"><label>User</label><input class="input" value="{{ settings_obj.db_user }}" readonly /></div>
+      </div>
+    </section>
+
+    <section id="auth" data-tab-pane="settings" data-pane-id="auth" class="settings-pane" style="display:none">
+      <div class="settings-pane-h"><h2>Аутентификация</h2><p>Локальный вход, Google, SSO (OIDC / Azure AD) и LDAP — best practices.</p></div>
+      <form method="post" class="settings-form">
+        {% csrf_token %}<input type="hidden" name="section" value="auth" />
+        <div class="settings-group">
+          <h3>Локальные учётки</h3>
+          <label class="row"><input class="checkbox" type="checkbox" name="auth_local_enabled" {% if settings_obj.auth_local_enabled %}checked{% endif %} /> Логин/пароль</label>
+          <div class="field"><label>Блокировка после N неудачных попыток</label><input class="input" type="number" min="3" name="auth_lockout_attempts" value="{{ settings_obj.auth_lockout_attempts }}" /></div>
+          <label class="row"><input class="checkbox" type="checkbox" name="auth_mfa_recommended" {% if settings_obj.auth_mfa_recommended %}checked{% endif %} /> Рекомендовать MFA (план)</label>
+        </div>
+        <div class="settings-group">
+          <h3>Google / Gmail OAuth</h3>
+          <label class="row"><input class="checkbox" type="checkbox" name="auth_google_enabled" {% if settings_obj.auth_google_enabled %}checked{% endif %} /> Включить кнопку «Войти через Google»</label>
+          <div class="field"><label>Client ID</label><input class="input" name="auth_google_client_id" value="{{ settings_obj.auth_google_client_id }}" /></div>
+          <div class="field"><label>Client Secret</label><input class="input" type="password" name="auth_google_client_secret" placeholder="оставьте пустым, чтобы не менять" /></div>
+        </div>
+        <div class="settings-group">
+          <h3>SSO (OIDC / Azure AD / SAML)</h3>
+          <label class="row"><input class="checkbox" type="checkbox" name="auth_sso_enabled" {% if settings_obj.auth_sso_enabled %}checked{% endif %} /> Включить SSO</label>
+          <div class="field"><label>Тип</label>
+            <select class="select" name="auth_sso_provider">
+              <option value="oidc" {% if settings_obj.auth_sso_provider == 'oidc' %}selected{% endif %}>OpenID Connect</option>
+              <option value="azure_ad" {% if settings_obj.auth_sso_provider == 'azure_ad' %}selected{% endif %}>Microsoft Entra ID (Azure AD)</option>
+              <option value="saml" {% if settings_obj.auth_sso_provider == 'saml' %}selected{% endif %}>SAML 2.0</option>
+            </select>
+          </div>
+          <div class="field"><label>Client ID</label><input class="input" name="auth_sso_client_id" value="{{ settings_obj.auth_sso_client_id }}" /></div>
+          <div class="field"><label>Client Secret</label><input class="input" type="password" name="auth_sso_client_secret" /></div>
+          <div class="field"><label>Discovery URL / Metadata</label><input class="input" name="auth_sso_discovery_url" value="{{ settings_obj.auth_sso_discovery_url }}" /></div>
+          <div class="field"><label>Tenant (Azure)</label><input class="input" name="auth_sso_tenant" value="{{ settings_obj.auth_sso_tenant }}" /></div>
+        </div>
+        <div class="settings-group">
+          <h3>LDAP / Active Directory</h3>
+          <label class="row"><input class="checkbox" type="checkbox" name="auth_ldap_enabled" {% if settings_obj.auth_ldap_enabled %}checked{% endif %} /> Включить LDAP bind</label>
+          <div class="field"><label>Server</label><input class="input" name="auth_ldap_server" value="{{ settings_obj.auth_ldap_server }}" placeholder="ldap://dc.example.ru" /></div>
+          <div class="field"><label>Bind DN</label><input class="input" name="auth_ldap_bind_dn" value="{{ settings_obj.auth_ldap_bind_dn }}" /></div>
+          <div class="field"><label>Base DN</label><input class="input" name="auth_ldap_base_dn" value="{{ settings_obj.auth_ldap_base_dn }}" /></div>
+        </div>
+        <button class="btn btn-primary" type="submit">Сохранить</button>
       </form>
     </section>
 
-    <section id="mail" data-tab-pane="settings" data-pane-id="mail" class="stack" style="display:none">
-      <form method="post" class="stack-form">
+    <section id="license" data-tab-pane="settings" data-pane-id="license" class="settings-pane" style="display:none">
+      <div class="settings-pane-h"><h2>Лицензия</h2></div>
+      <div class="alert {% if license_status.valid %}ok{% else %}warn{% endif %}">{{ license_status.message }} · {{ license_status.license_id }}</div>
+      <div class="settings-form">Fingerprint: <span class="mono">{{ license_status.fingerprint }}</span></div>
+      <form method="post" enctype="multipart/form-data" class="settings-form">
+        {% csrf_token %}<input type="hidden" name="section" value="license" />
+        <div class="field"><label>License Server URL</label><input class="input" name="license_server_url" placeholder="http://license_server:8090" /></div>
+        <div class="field"><label>Файл .novalic</label><input class="input" type="file" name="license_file" accept=".novalic,application/json" /></div>
+        <button class="btn btn-primary" type="submit">Обновить лицензию</button>
+      </form>
+    </section>
+
+    <section id="mail" data-tab-pane="settings" data-pane-id="mail" class="settings-pane" style="display:none">
+      <div class="settings-pane-h"><h2>Почта / Exchange</h2><p>SMTP, Gmail, Office 365 или on-prem Exchange.</p></div>
+      <form method="post" class="settings-form">
         {% csrf_token %}<input type="hidden" name="section" value="mail" />
+        <div class="field"><label>Провайдер</label>
+          <select class="select" name="mail_provider">
+            <option value="smtp" {% if settings_obj.mail_provider == 'smtp' %}selected{% endif %}>SMTP</option>
+            <option value="exchange" {% if settings_obj.mail_provider == 'exchange' %}selected{% endif %}>Exchange EWS</option>
+            <option value="office365" {% if settings_obj.mail_provider == 'office365' %}selected{% endif %}>Office 365</option>
+            <option value="gmail" {% if settings_obj.mail_provider == 'gmail' %}selected{% endif %}>Gmail</option>
+          </select>
+        </div>
         <div class="grid-2">
           <div class="field"><label>Host</label><input class="input" name="smtp_host" value="{{ settings_obj.smtp_host }}" /></div>
           <div class="field"><label>Port</label><input class="input" name="smtp_port" value="{{ settings_obj.smtp_port }}" /></div>
           <div class="field"><label>User</label><input class="input" name="smtp_user" value="{{ settings_obj.smtp_user }}" /></div>
           <div class="field"><label>Password</label><input class="input" type="password" name="smtp_password" /></div>
           <div class="field"><label>From</label><input class="input" name="smtp_from" value="{{ settings_obj.smtp_from }}" /></div>
+          <div class="field"><label>EWS URL</label><input class="input" name="exchange_ews_url" value="{{ settings_obj.exchange_ews_url }}" /></div>
+          <div class="field"><label>Domain</label><input class="input" name="exchange_domain" value="{{ settings_obj.exchange_domain }}" /></div>
         </div>
-        <label class="row"><input class="checkbox" type="checkbox" name="smtp_use_tls" {% if settings_obj.smtp_use_tls %}checked{% endif %} /> TLS</label>
+        <label class="row"><input class="checkbox" type="checkbox" name="smtp_use_tls" {% if settings_obj.smtp_use_tls %}checked{% endif %} /> STARTTLS</label>
+        <label class="row"><input class="checkbox" type="checkbox" name="smtp_use_ssl" {% if settings_obj.smtp_use_ssl %}checked{% endif %} /> SSL</label>
         <button class="btn btn-primary" type="submit">Сохранить</button>
       </form>
     </section>
 
-    <section id="telegram" data-tab-pane="settings" data-pane-id="telegram" class="stack" style="display:none">
-      <form method="post" class="stack-form">
+    <section id="telegram" data-tab-pane="settings" data-pane-id="telegram" class="settings-pane" style="display:none">
+      <div class="settings-pane-h"><h2>Telegram</h2></div>
+      <form method="post" class="settings-form">
         {% csrf_token %}<input type="hidden" name="section" value="telegram" />
         <div class="field"><label>Bot token</label><input class="input" name="telegram_bot_token" value="{{ settings_obj.telegram_bot_token }}" /></div>
         <div class="field"><label>Chat ID</label><input class="input" name="telegram_chat_id" value="{{ settings_obj.telegram_chat_id }}" /></div>
@@ -93,18 +197,26 @@
       </form>
     </section>
 
-    <section id="license" data-tab-pane="settings" data-pane-id="license" class="stack" style="display:none">
-      <div class="alert {% if license_status.valid %}ok{% else %}warn{% endif %}">{{ license_status.message }} · {{ license_status.license_id }}</div>
-      <div>Fingerprint: <span class="mono">{{ license_status.fingerprint }}</span></div>
-    </section>
-
-    <section id="database" data-tab-pane="settings" data-pane-id="database" class="stack" style="display:none">
-      <div class="alert info">Параметры БД (пароль хранится в `.env`, не в UI).</div>
-      <div class="grid-2">
-        <div class="field"><label>Host</label><input class="input" value="{{ settings_obj.db_host }}" readonly /></div>
-        <div class="field"><label>Port</label><input class="input" value="{{ settings_obj.db_port }}" readonly /></div>
-        <div class="field"><label>DB</label><input class="input" value="{{ settings_obj.db_name }}" readonly /></div>
-        <div class="field"><label>User</label><input class="input" value="{{ settings_obj.db_user }}" readonly /></div>
+    <section id="system" data-tab-pane="settings" data-pane-id="system" class="settings-pane" style="display:none">
+      <div class="settings-pane-h">
+        <h2>Система</h2>
+        <p>Загрузка сервера в реальном времени. Обновление каждые 5 сек.</p>
+      </div>
+      <div class="metrics-grid" id="metrics-grid">
+        <div class="metric-card"><div class="label">CPU</div><div class="metric-value" data-m="cpu">{{ system_metrics.cpu.percent }}%</div><div class="metric-bar"><span data-bar="cpu" style="width:{{ system_metrics.cpu.percent }}%"></span></div><div class="metric-sub">cores: {{ system_metrics.cpu.count }} · load {{ system_metrics.cpu.load_1 }}</div></div>
+        <div class="metric-card"><div class="label">RAM</div><div class="metric-value" data-m="ram">{{ system_metrics.ram.percent }}%</div><div class="metric-bar"><span data-bar="ram" style="width:{{ system_metrics.ram.percent }}%"></span></div><div class="metric-sub" data-m="ram-sub">used / total</div></div>
+        <div class="metric-card"><div class="label">SWAP</div><div class="metric-value" data-m="swap">{{ system_metrics.swap.percent }}%</div><div class="metric-bar"><span data-bar="swap" style="width:{{ system_metrics.swap.percent }}%"></span></div><div class="metric-sub">swap usage</div></div>
+        <div class="metric-card"><div class="label">Disk /</div><div class="metric-value" data-m="disk">{{ system_metrics.disk_root.percent }}%</div><div class="metric-bar"><span data-bar="disk" style="width:{{ system_metrics.disk_root.percent }}%"></span></div><div class="metric-sub" data-m="disk-sub">root filesystem</div></div>
+      </div>
+      <div class="table-wrap" style="margin-top:12px">
+        <table class="data" id="disks-table">
+          <thead><tr><th>Mount</th><th>Device</th><th>Used %</th><th>Free</th></tr></thead>
+          <tbody>
+            {% for d in system_metrics.disks %}
+            <tr><td class="mono">{{ d.mount }}</td><td class="mono">{{ d.device }}</td><td>{{ d.percent }}%</td><td>{{ d.free }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </section>
   </div>
@@ -112,26 +224,59 @@
 {% endblock %}
 {% block scripts %}
 <script>
-document.querySelectorAll('[data-tabs]').forEach(function(nav){
-  var scope = nav.getAttribute('data-tabs');
+(function(){
   function activate(id){
+    var nav=document.querySelector('[data-tabs="settings"]');
+    if(!nav) return;
     nav.querySelectorAll('a').forEach(function(x){ x.classList.toggle('is-active', (x.getAttribute('data-tab')||'')===id); });
-    document.querySelectorAll('[data-tab-pane="'+scope+'"]').forEach(function(pane){
+    document.querySelectorAll('[data-tab-pane="settings"]').forEach(function(pane){
       var on = pane.id===id || pane.getAttribute('data-pane-id')===id;
       pane.classList.toggle('is-active', on);
       pane.style.display = on ? '' : 'none';
     });
   }
-  nav.querySelectorAll('a').forEach(function(link){
-    link.addEventListener('click', function(e){
-      e.preventDefault();
-      var id = link.getAttribute('data-tab');
-      activate(id);
-      if (history.replaceState) history.replaceState(null,'','#'+id);
+  var nav=document.querySelector('[data-tabs="settings"]');
+  if(nav){
+    nav.querySelectorAll('a').forEach(function(link){
+      link.addEventListener('click', function(e){
+        e.preventDefault();
+        var id=link.getAttribute('data-tab');
+        activate(id);
+        if(history.replaceState) history.replaceState(null,'','#'+id);
+      });
     });
-  });
-  var hash = (location.hash||'').replace('#','') || 'org';
-  activate(hash);
-});
+    activate((location.hash||'').replace('#','') || 'org');
+  }
+  function fmtBytes(n){
+    if(!n) return '0 B';
+    var u=['B','KB','MB','GB','TB']; var i=0; var x=n;
+    while(x>=1024 && i<u.length-1){ x/=1024; i++; }
+    return x.toFixed(1)+' '+u[i];
+  }
+  function refreshMetrics(){
+    fetch('{% url "system_metrics_api" %}', {headers:{'Accept':'application/json'}})
+      .then(function(r){ return r.json(); })
+      .then(function(m){
+        var map={cpu:m.cpu.percent, ram:m.ram.percent, swap:m.swap.percent, disk:m.disk_root.percent};
+        Object.keys(map).forEach(function(k){
+          var el=document.querySelector('[data-m="'+k+'"]');
+          var bar=document.querySelector('[data-bar="'+k+'"]');
+          if(el) el.textContent = map[k]+'%';
+          if(bar) bar.style.width = map[k]+'%';
+        });
+        var ramSub=document.querySelector('[data-m="ram-sub"]');
+        if(ramSub) ramSub.textContent = fmtBytes(m.ram.used)+' / '+fmtBytes(m.ram.total);
+        var diskSub=document.querySelector('[data-m="disk-sub"]');
+        if(diskSub) diskSub.textContent = fmtBytes(m.disk_root.used)+' / '+fmtBytes(m.disk_root.total);
+        var tbody=document.querySelector('#disks-table tbody');
+        if(tbody && m.disks){
+          tbody.innerHTML = m.disks.map(function(d){
+            return '<tr><td class="mono">'+d.mount+'</td><td class="mono">'+d.device+'</td><td>'+d.percent+'%</td><td>'+fmtBytes(d.free)+'</td></tr>';
+          }).join('');
+        }
+      }).catch(function(){});
+  }
+  setInterval(refreshMetrics, 5000);
+})();
 </script>
 {% endblock %}
