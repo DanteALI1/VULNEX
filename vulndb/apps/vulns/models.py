@@ -33,8 +33,10 @@ class Vulnerability(models.Model):
     bdu_id = models.CharField(max_length=64, blank=True, default="", db_index=True)
     has_bdu = models.BooleanField(default=False)
     bdu_raw = models.JSONField(default=dict, blank=True)
-    vendor = models.CharField(max_length=255, blank=True, default="")
-    product_name = models.CharField(max_length=255, blank=True, default="")
+    # FSTEC BDU contains vendor/product strings longer than 255 chars.
+    # Use TEXT to avoid "value too long for type character varying(255)".
+    vendor = models.TextField(blank=True, default="")
+    product_name = models.TextField(blank=True, default="")
     product_version = models.TextField(blank=True, default="")
     remediation = models.TextField(blank=True, default="")
     vuln_status = models.CharField(max_length=128, blank=True, default="")
