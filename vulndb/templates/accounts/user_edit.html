@@ -1,0 +1,55 @@
+{% extends "base_app.html" %}
+{% block page_title %}{{ target.username }}{% endblock %}
+{% block crumbs %}
+<a href="{% url 'dashboard' %}">Дашборд</a><span>/</span>
+<a href="{% url 'user_list' %}">Пользователи</a><span>/</span>
+<strong>{{ target.username }}</strong>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ target.username }}</h1>
+    <p>Смена роли, пароля и статуса. Последнего администратора снять нельзя.</p>
+  </div>
+</div>
+<div class="panel" style="max-width:640px">
+  <div class="panel-h"><h2>Редактирование</h2><span class="sub">{{ target.get_role_display }}</span></div>
+  <form method="post" class="settings-form" style="padding:14px 16px 16px">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert warn">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="field">
+      <label>Логин</label>
+      <input class="input" value="{{ target.username }}" disabled />
+    </div>
+    <div class="field">
+      <label>{{ form.full_name.label }}</label>
+      {{ form.full_name }}
+    </div>
+    <div class="field">
+      <label>{{ form.email.label }}</label>
+      {{ form.email }}
+    </div>
+    <div class="field">
+      <label>{{ form.role.label }}</label>
+      {{ form.role }}
+    </div>
+    <div class="field">
+      <label>{{ form.password.label }}</label>
+      {{ form.password }}
+      <div class="hint">Оставьте пустым, чтобы не менять пароль.</div>
+      {% if form.password.errors %}<div class="field-error">{{ form.password.errors.0 }}</div>{% endif %}
+    </div>
+    <div class="field">
+      <label>{{ form.password2.label }}</label>
+      {{ form.password2 }}
+      {% if form.password2.errors %}<div class="field-error">{{ form.password2.errors.0 }}</div>{% endif %}
+    </div>
+    <label class="row">{{ form.is_verifier }} {{ form.is_verifier.label }}</label>
+    <label class="row">{{ form.is_active }} {{ form.is_active.label }}</label>
+    <div class="row" style="gap:8px">
+      <button class="btn btn-primary" type="submit">Сохранить</button>
+      <a class="btn" href="{% url 'user_list' %}">К списку</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

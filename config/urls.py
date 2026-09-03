@@ -4,6 +4,7 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("vulndb.apps.accounts.urls")),
+    path("users/", include("vulndb.apps.accounts.urls_users")),
     path("setup/", include("vulndb.apps.core.urls_setup")),
     path("settings/", include("vulndb.apps.core.urls_settings")),
     path("vulns/", include("vulndb.apps.vulns.urls")),
