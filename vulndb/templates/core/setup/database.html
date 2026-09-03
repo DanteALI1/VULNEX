@@ -4,10 +4,11 @@
   {% csrf_token %}
   <div class="panel-h"><h2>Подключение PostgreSQL</h2><span class="sub">УЗ в БД ≠ админ веб-интерфейса VULNDB</span></div>
   <div class="panel-b stack">
-    <div class="alert info">
-      Нужна отдельная <b>учётная запись PostgreSQL</b> с правами на базу приложения.
-      Если УЗ ещё нет — вкладка «Создать УЗ и базу» (пароль superuser не сохраняется).
-    </div>
+          <div class="alert info">
+            Нужна отдельная <b>учётная запись PostgreSQL</b> с правами на базу приложения.
+            Обязательно нажмите <b>«Проверить подключение»</b> — выполняется SELECT 1 и проверка прав.
+            Если УЗ ещё нет — вкладка «Создать УЗ и базу» (пароль superuser не сохраняется).
+          </div>
 
     {% if compose_mode %}
     <div class="alert ok">

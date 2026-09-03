@@ -32,6 +32,13 @@ class Vulnerability(models.Model):
     kev_data = models.JSONField(default=dict, blank=True)
     bdu_id = models.CharField(max_length=64, blank=True, default="", db_index=True)
     has_bdu = models.BooleanField(default=False)
+    bdu_raw = models.JSONField(default=dict, blank=True)
+    vendor = models.CharField(max_length=255, blank=True, default="")
+    product_name = models.CharField(max_length=255, blank=True, default="")
+    product_version = models.TextField(blank=True, default="")
+    remediation = models.TextField(blank=True, default="")
+    vuln_status = models.CharField(max_length=128, blank=True, default="")
+    exploit_present = models.CharField(max_length=128, blank=True, default="")
 
     published_at = models.DateTimeField(null=True, blank=True)
     modified_at = models.DateTimeField(null=True, blank=True)

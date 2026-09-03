@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.management import call_command
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -20,20 +20,20 @@ from vulndb.apps.core.db_utils import (
     validate_prefix,
 )
 from vulndb.apps.core.models import SystemSettings
+from vulndb.apps.core.system_metrics import collect_system_metrics
 from vulndb.apps.licensing.services import get_license_status, install_license_file
 
 User = get_user_model()
 
+# First-run wizard: organization → branding → DB → sources → admin → mail → finish
 WIZARD_STEPS = [
-    (1, "license", "Лицензия"),
-    (2, "organization", "Организация"),
-    (3, "branding", "Оформление"),
-    (4, "database", "База данных"),
+    (1, "organization", "Организация"),
+    (2, "branding", "Брендинг"),
+    (3, "database", "База данных"),
+    (4, "sources", "Источники"),
     (5, "admin", "Администратор"),
-    (6, "sources", "Источники"),
-    (7, "mail", "Почта"),
-    (8, "telegram", "Telegram"),
-    (9, "finish", "Финиш"),
+    (6, "mail", "Почта"),
+    (7, "finish", "Финиш"),
 ]
 
 
@@ -76,7 +76,9 @@ def dashboard(request: HttpRequest) -> HttpResponse:
     kev = qs.filter(in_kev=True).count()
     local = qs.filter(record_type=Vulnerability.RecordType.LOCAL).count()
     attention = qs.filter(Q(severity="CRITICAL") | Q(in_kev=True)).order_by("-cvss_score")[:10]
-    open_tickets = Ticket.objects.exclude(status__in=["closed", "rejected"]).order_by("-updated_at")[:10]
+    open_tickets = (
+        Ticket.objects.exclude(status__in=["closed", "rejected"]).order_by("-updated_at")[:10]
+    )
     syncs = SyncState.objects.all()
     return render(
         request,
@@ -100,8 +102,9 @@ def setup_wizard(request: HttpRequest) -> HttpResponse:
     s = SystemSettings.load()
     if s.setup_completed:
         return redirect("dashboard")
+    max_step = len(WIZARD_STEPS)
     step = int(request.GET.get("step") or s.setup_step or 1)
-    step = max(1, min(9, step))
+    step = max(1, min(max_step, step))
 
     if request.method == "POST":
         action = request.POST.get("action", "next")
@@ -115,18 +118,23 @@ def setup_wizard(request: HttpRequest) -> HttpResponse:
             messages.error(request, err)
             return redirect(f"{request.path}?step={step}")
 
-        if step >= 9:
+        if step >= max_step:
             s.setup_completed = True
-            s.setup_step = 9
+            s.setup_step = max_step
             s.save()
             try:
                 call_command("migrate", interactive=False, verbosity=0)
             except Exception:
                 pass
             try:
-                from vulndb.apps.vulns.tasks import sync_nvd
+                from vulndb.apps.vulns.tasks import sync_bdu, sync_kev, sync_nvd
 
-                sync_nvd.delay()
+                if s.nvd_enabled:
+                    sync_nvd.delay()
+                if s.kev_enabled:
+                    sync_kev.delay()
+                if s.bdu_enabled:
+                    sync_bdu.delay()
             except Exception:
                 pass
             messages.success(request, "Настройка VULNDB завершена.")
@@ -136,45 +144,31 @@ def setup_wizard(request: HttpRequest) -> HttpResponse:
         s.save(update_fields=["setup_step"])
         return redirect(f"{request.path}?step={s.setup_step}")
 
-    ctx = {
-        "step": step,
-        "steps": _steps_ctx(step),
-        "settings_obj": s,
-        "license_status": get_license_status(),
-        "compose_mode": bool(getattr(settings, "DATABASE_URL", "")),
-    }
-    template = {
-        1: "core/setup/license.html",
-        2: "core/setup/organization.html",
-        3: "core/setup/branding.html",
-        4: "core/setup/database.html",
+    templates = {
+        1: "core/setup/organization.html",
+        2: "core/setup/branding.html",
+        3: "core/setup/database.html",
+        4: "core/setup/sources.html",
         5: "core/setup/admin.html",
-        6: "core/setup/sources.html",
-        7: "core/setup/mail.html",
-        8: "core/setup/telegram.html",
-        9: "core/setup/finish.html",
-    }[step]
-    return render(request, template, ctx)
+        6: "core/setup/mail.html",
+        7: "core/setup/finish.html",
+    }
+    return render(
+        request,
+        templates[step],
+        {
+            "step": step,
+            "steps": _steps_ctx(step),
+            "settings_obj": s,
+            "license_status": get_license_status(),
+            "compose_mode": bool(getattr(settings, "DATABASE_URL", "")),
+            "total_steps": max_step,
+        },
+    )
 
 
 def _handle_step(request: HttpRequest, s: SystemSettings, step: int) -> tuple[bool, str]:
     if step == 1:
-        lic = request.FILES.get("license_file")
-        url = request.POST.get("license_server_url", "").strip()
-        if url:
-            upsert_env_var("LICENSE_SERVER_URL", url)
-        if lic:
-            ok, msg = install_license_file(lic.read())
-            if not ok:
-                return False, msg
-        st = get_license_status()
-        if not st.get("valid") and not st.get("grace"):
-            # Allow continue in DEBUG / first install with demo
-            if not settings.DEBUG:
-                return False, "Лицензия недействительна. Загрузите .novalic или проверьте License Server."
-        return True, ""
-
-    if step == 2:
         name = request.POST.get("organization_name", "").strip()
         prefix = request.POST.get("local_id_prefix", "").strip()
         ok, result = validate_prefix(prefix)
@@ -187,7 +181,7 @@ def _handle_step(request: HttpRequest, s: SystemSettings, step: int) -> tuple[bo
         s.save()
         return True, ""
 
-    if step == 3:
+    if step == 2:
         s.login_title = request.POST.get("login_title", s.login_title).strip()
         s.login_text = request.POST.get("login_text", s.login_text).strip()
         s.product_name = request.POST.get("product_name", "VULNDB").strip() or "VULNDB"
@@ -197,7 +191,7 @@ def _handle_step(request: HttpRequest, s: SystemSettings, step: int) -> tuple[bo
         s.save()
         return True, ""
 
-    if step == 4:
+    if step == 3:
         mode = request.POST.get("db_mode", "connect")
         if mode == "skip_compose" or request.POST.get("compose_ok"):
             s.db_configured = True
@@ -241,6 +235,22 @@ def _handle_step(request: HttpRequest, s: SystemSettings, step: int) -> tuple[bo
             return False, f"Подключение OK, но migrate не удался: {exc}"
         return True, ""
 
+    if step == 4:
+        s.nvd_api_key = request.POST.get("nvd_api_key", "").strip()
+        s.nvd_enabled = request.POST.get("nvd_enabled") == "on"
+        s.kev_enabled = request.POST.get("kev_enabled") == "on"
+        s.bdu_enabled = request.POST.get("bdu_enabled") == "on"
+        s.bdu_xlsx_url = (
+            request.POST.get("bdu_xlsx_url", "").strip()
+            or "https://bdu.fstec.ru/files/documents/vullist.xlsx"
+        )
+        s.bdu_verify_ssl = request.POST.get("bdu_verify_ssl") == "on"
+        s.nvd_sync_interval_minutes = int(request.POST.get("nvd_sync_interval_minutes") or 60)
+        s.bdu_sync_interval_minutes = int(request.POST.get("bdu_sync_interval_minutes") or 1440)
+        s.kev_sync_interval_minutes = int(request.POST.get("kev_sync_interval_minutes") or 360)
+        s.save()
+        return True, ""
+
     if step == 5:
         username = request.POST.get("username", "").strip()
         full_name = request.POST.get("full_name", "").strip()
@@ -271,35 +281,23 @@ def _handle_step(request: HttpRequest, s: SystemSettings, step: int) -> tuple[bo
         return True, ""
 
     if step == 6:
-        s.nvd_api_key = request.POST.get("nvd_api_key", "").strip()
-        s.nvd_enabled = request.POST.get("nvd_enabled") == "on"
-        s.kev_enabled = request.POST.get("kev_enabled") == "on"
-        s.bdu_enabled = request.POST.get("bdu_enabled") == "on"
-        s.sync_cron_hint = request.POST.get("sync_cron_hint", "hourly").strip()
-        s.save()
-        return True, ""
-
-    if step == 7:
+        if request.POST.get("skip_mail"):
+            return True, ""
+        s.mail_provider = request.POST.get("mail_provider", "smtp").strip() or "smtp"
         s.smtp_host = request.POST.get("smtp_host", "").strip()
         s.smtp_port = int(request.POST.get("smtp_port") or 587)
         s.smtp_user = request.POST.get("smtp_user", "").strip()
         if request.POST.get("smtp_password"):
             s.smtp_password = request.POST.get("smtp_password", "")
         s.smtp_use_tls = request.POST.get("smtp_use_tls") == "on"
+        s.smtp_use_ssl = request.POST.get("smtp_use_ssl") == "on"
         s.smtp_from = request.POST.get("smtp_from", "").strip()
+        s.exchange_ews_url = request.POST.get("exchange_ews_url", "").strip()
+        s.exchange_domain = request.POST.get("exchange_domain", "").strip()
         s.save()
         return True, ""
 
-    if step == 8:
-        if request.POST.get("skip_telegram"):
-            return True, ""
-        s.telegram_bot_token = request.POST.get("telegram_bot_token", "").strip()
-        s.telegram_chat_id = request.POST.get("telegram_chat_id", "").strip()
-        s.telegram_enabled = bool(s.telegram_bot_token)
-        s.save()
-        return True, ""
-
-    if step == 9:
+    if step == 7:
         return True, ""
 
     return False, "Неизвестный шаг."
@@ -342,6 +340,7 @@ def app_settings(request: HttpRequest) -> HttpResponse:
             messages.error(request, "Недостаточно прав.")
             return redirect("app_settings")
         section = request.POST.get("section", tab)
+
         if section == "org":
             ok, result = validate_prefix(request.POST.get("local_id_prefix", ""))
             if not ok:
@@ -358,15 +357,27 @@ def app_settings(request: HttpRequest) -> HttpResponse:
             if request.FILES.get("logo"):
                 s.logo = request.FILES["logo"]
             s.save()
-            messages.success(request, "Оформление сохранено.")
+            messages.success(request, "Брендинг сохранён.")
         elif section == "sources":
             s.nvd_api_key = request.POST.get("nvd_api_key", s.nvd_api_key)
             s.nvd_enabled = request.POST.get("nvd_enabled") == "on"
             s.kev_enabled = request.POST.get("kev_enabled") == "on"
             s.bdu_enabled = request.POST.get("bdu_enabled") == "on"
+            s.bdu_xlsx_url = request.POST.get("bdu_xlsx_url", s.bdu_xlsx_url)
+            s.bdu_verify_ssl = request.POST.get("bdu_verify_ssl") == "on"
+            s.nvd_sync_interval_minutes = int(
+                request.POST.get("nvd_sync_interval_minutes") or s.nvd_sync_interval_minutes
+            )
+            s.bdu_sync_interval_minutes = int(
+                request.POST.get("bdu_sync_interval_minutes") or s.bdu_sync_interval_minutes
+            )
+            s.kev_sync_interval_minutes = int(
+                request.POST.get("kev_sync_interval_minutes") or s.kev_sync_interval_minutes
+            )
             s.save()
-            messages.success(request, "Источники сохранены.")
+            messages.success(request, "Источники и интервалы сохранены.")
         elif section == "mail":
+            s.mail_provider = request.POST.get("mail_provider", s.mail_provider)
             s.smtp_host = request.POST.get("smtp_host", "")
             s.smtp_port = int(request.POST.get("smtp_port") or 587)
             s.smtp_user = request.POST.get("smtp_user", "")
@@ -374,14 +385,48 @@ def app_settings(request: HttpRequest) -> HttpResponse:
                 s.smtp_password = request.POST["smtp_password"]
             s.smtp_from = request.POST.get("smtp_from", "")
             s.smtp_use_tls = request.POST.get("smtp_use_tls") == "on"
+            s.smtp_use_ssl = request.POST.get("smtp_use_ssl") == "on"
+            s.exchange_ews_url = request.POST.get("exchange_ews_url", "")
+            s.exchange_domain = request.POST.get("exchange_domain", "")
             s.save()
-            messages.success(request, "Почта сохранена.")
+            messages.success(request, "Почта / Exchange сохранены.")
         elif section == "telegram":
             s.telegram_bot_token = request.POST.get("telegram_bot_token", "")
             s.telegram_chat_id = request.POST.get("telegram_chat_id", "")
             s.telegram_enabled = request.POST.get("telegram_enabled") == "on"
             s.save()
             messages.success(request, "Telegram сохранён.")
+        elif section == "auth":
+            s.auth_local_enabled = request.POST.get("auth_local_enabled") == "on"
+            s.auth_google_enabled = request.POST.get("auth_google_enabled") == "on"
+            s.auth_google_client_id = request.POST.get("auth_google_client_id", "")
+            if request.POST.get("auth_google_client_secret"):
+                s.auth_google_client_secret = request.POST.get("auth_google_client_secret", "")
+            s.auth_sso_enabled = request.POST.get("auth_sso_enabled") == "on"
+            s.auth_sso_provider = request.POST.get("auth_sso_provider", "oidc")
+            s.auth_sso_client_id = request.POST.get("auth_sso_client_id", "")
+            if request.POST.get("auth_sso_client_secret"):
+                s.auth_sso_client_secret = request.POST.get("auth_sso_client_secret", "")
+            s.auth_sso_discovery_url = request.POST.get("auth_sso_discovery_url", "")
+            s.auth_sso_tenant = request.POST.get("auth_sso_tenant", "")
+            s.auth_ldap_enabled = request.POST.get("auth_ldap_enabled") == "on"
+            s.auth_ldap_server = request.POST.get("auth_ldap_server", "")
+            s.auth_ldap_bind_dn = request.POST.get("auth_ldap_bind_dn", "")
+            s.auth_ldap_base_dn = request.POST.get("auth_ldap_base_dn", "")
+            s.auth_mfa_recommended = request.POST.get("auth_mfa_recommended") == "on"
+            s.auth_lockout_attempts = int(request.POST.get("auth_lockout_attempts") or 5)
+            s.save()
+            messages.success(request, "Параметры аутентификации сохранены.")
+        elif section == "license":
+            lic = request.FILES.get("license_file")
+            url = request.POST.get("license_server_url", "").strip()
+            if url:
+                upsert_env_var("LICENSE_SERVER_URL", url)
+            if lic:
+                ok, msg = install_license_file(lic.read())
+                messages.success(request, msg) if ok else messages.error(request, msg)
+            else:
+                messages.info(request, "Загрузите файл .novalic для обновления лицензии.")
         elif section == "sync":
             source = request.POST.get("run_sync")
             if source:
@@ -398,8 +443,14 @@ def app_settings(request: HttpRequest) -> HttpResponse:
                         task.delay()
                         messages.success(request, f"Запущена синхронизация {source.upper()}.")
                     except Exception:
-                        task()
-                        messages.success(request, f"Синхронизация {source.upper()} выполнена синхронно.")
+                        # Sync BDU can be heavy; run with small limit if celery unavailable
+                        if source == "bdu":
+                            task(limit=200)
+                        else:
+                            task()
+                        messages.success(
+                            request, f"Синхронизация {source.upper()} выполнена синхронно."
+                        )
         return redirect(f"/settings/#{section}")
 
     from vulndb.apps.vulns.models import SyncState
@@ -412,5 +463,11 @@ def app_settings(request: HttpRequest) -> HttpResponse:
             "syncs": SyncState.objects.all(),
             "license_status": get_license_status(),
             "active_tab": tab,
+            "system_metrics": collect_system_metrics(),
         },
     )
+
+
+@login_required
+def system_metrics_api(request: HttpRequest) -> JsonResponse:
+    return JsonResponse(collect_system_metrics())
