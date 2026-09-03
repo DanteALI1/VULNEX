@@ -418,15 +418,18 @@ def app_settings(request: HttpRequest) -> HttpResponse:
             s.save()
             messages.success(request, "Параметры аутентификации сохранены.")
         elif section == "license":
-            lic = request.FILES.get("license_file")
-            url = request.POST.get("license_server_url", "").strip()
-            if url:
-                upsert_env_var("LICENSE_SERVER_URL", url)
-            if lic:
-                ok, msg = install_license_file(lic.read())
-                messages.success(request, msg) if ok else messages.error(request, msg)
+            if not getattr(settings, "LICENSE_REQUIRED", False):
+                messages.info(request, "В свободной редакции лицензия не требуется.")
             else:
-                messages.info(request, "Загрузите файл .novalic для обновления лицензии.")
+                lic = request.FILES.get("license_file")
+                url = request.POST.get("license_server_url", "").strip()
+                if url:
+                    upsert_env_var("LICENSE_SERVER_URL", url)
+                if lic:
+                    ok, msg = install_license_file(lic.read())
+                    messages.success(request, msg) if ok else messages.error(request, msg)
+                else:
+                    messages.info(request, "Загрузите файл .novalic для обновления лицензии.")
         elif section == "sync":
             source = request.POST.get("run_sync")
             if source:

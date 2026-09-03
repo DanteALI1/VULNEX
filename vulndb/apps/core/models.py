@@ -21,8 +21,8 @@ class SystemSettings(models.Model):
     login_text = models.TextField(
         blank=True,
         default=(
-            "Каталог NVD / KEV / БДУ, локальные уязвимости с вашим префиксом ID, "
-            "заявки на устранение и контроль лицензии."
+            "Каталог NVD / KEV / БДУ, локальные уязвимости с вашим префиксом ID "
+            "и заявки на устранение."
         ),
     )
     logo = models.ImageField(upload_to="branding/", blank=True, null=True)
