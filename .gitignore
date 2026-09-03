@@ -55,3 +55,4 @@ redisdata/
 
 # Node (if any)
 node_modules/
+artifacts/
