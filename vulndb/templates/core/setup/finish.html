@@ -1,0 +1,19 @@
+{% extends "core/setup/base_wizard.html" %}
+{% block wizard_content %}
+<form method="post" class="panel">
+  {% csrf_token %}
+  <div class="panel-h"><h2>Финиш</h2></div>
+  <div class="panel-b stack">
+    <div class="alert ok">Готово к запуску VULNDB. После подтверждения будут применены миграции (если нужно) и запущен kickoff NVD sync.</div>
+    <ul>
+      <li>Организация: <b>{{ settings_obj.organization_name }}</b></li>
+      <li>Префикс: <span class="mono">{{ settings_obj.local_id_prefix }}</span></li>
+      <li>БД настроена: {% if settings_obj.db_configured %}да{% else %}нет / Compose{% endif %}</li>
+    </ul>
+  </div>
+  <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
+    <button class="btn" type="submit" name="action" value="back">Назад</button>
+    <button class="btn btn-primary" type="submit" name="action" value="next">Завершить и открыть вход</button>
+  </div>
+</form>
+{% endblock %}

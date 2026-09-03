@@ -1,0 +1,16 @@
+{% extends "core/setup/base_wizard.html" %}
+{% block wizard_content %}
+<form method="post" enctype="multipart/form-data" class="panel">
+  {% csrf_token %}
+  <div class="panel-h"><h2>Лицензия</h2><span class="sub">.novalic · Ed25519 · fingerprint</span></div>
+  <div class="panel-b stack">
+    <div class="alert info">Fingerprint этой площадки: <span class="mono">{{ license_status.fingerprint }}</span></div>
+    <div class="alert {% if license_status.valid %}ok{% else %}warn{% endif %}">Статус: {{ license_status.message }} {% if license_status.license_id %}· {{ license_status.license_id }}{% endif %}</div>
+    <div class="field"><label>URL License Server</label><input class="input" name="license_server_url" value="{{ license_status.license_server_url|default:'' }}" placeholder="http://license_server:8090" /></div>
+    <div class="field"><label>Файл лицензии (.novalic)</label><input class="input" type="file" name="license_file" accept=".novalic,application/json" /></div>
+  </div>
+  <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
+    <button class="btn btn-primary" type="submit" name="action" value="next">Продолжить</button>
+  </div>
+</form>
+{% endblock %}

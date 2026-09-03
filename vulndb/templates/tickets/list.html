@@ -1,0 +1,158 @@
+{% extends "base_app.html" %}
+{% block page_title %}Заявки{% endblock %}
+{% block crumbs %}<a href="{% url 'dashboard' %}">Дашборд</a><span>/</span><strong>Заявки</strong>{% endblock %}
+{% block top_actions %}
+<button class="btn btn-sm btn-primary" type="button" data-modal-open="modal-new">Новая заявка</button>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Заявки на устранение</h1>
+    <p>Статусы меняют роли по правилам. Закрытие — только после <b>подтверждения</b> постановщиком (или verifier), не одним кликом исполнителя.</p>
+  </div>
+</div>
+
+<div class="panel" style="margin-bottom:12px">
+  <div class="panel-h"><h2>Жизненный цикл</h2></div>
+  <div class="flow">
+    <span class="flow-step {% if selected.status == 'new' %}is-current{% elif selected %}is-done{% endif %}">new</span><span class="flow-arrow">→</span>
+    <span class="flow-step {% if selected.status == 'triage' %}is-current{% endif %}">triage</span><span class="flow-arrow">→</span>
+    <span class="flow-step {% if selected.status == 'in_progress' %}is-current{% endif %}">in_progress</span><span class="flow-arrow">→</span>
+    <span class="flow-step {% if selected.status == 'waiting' %}is-current{% endif %}">waiting</span><span class="flow-arrow">→</span>
+    <span class="flow-step {% if selected.status == 'resolved' %}is-current{% endif %}">resolved</span><span class="flow-arrow">→</span>
+    <span class="flow-step {% if selected.status == 'closed' %}is-current{% endif %}">closed</span>
+    <span class="flow-arrow" style="margin-left:8px">|</span>
+    <span class="flow-step {% if selected.status == 'rejected' %}is-reject{% endif %}">rejected</span>
+  </div>
+</div>
+
+<div class="split">
+  <div class="panel">
+    <div class="toolbar">
+      <form method="get">
+        <select class="select" style="height:28px;width:auto" name="view" onchange="this.form.submit()">
+          <option value="open" {% if view == 'open' %}selected{% endif %}>Открытые</option>
+          <option value="mine" {% if view == 'mine' %}selected{% endif %}>Мои как исполнитель</option>
+          <option value="confirm" {% if view == 'confirm' %}selected{% endif %}>Ждут подтверждения</option>
+          <option value="closed" {% if view == 'closed' %}selected{% endif %}>Закрытые</option>
+        </select>
+      </form>
+      <span class="grow"></span>
+      <span style="font-size:12px;color:var(--text-3)">{{ tickets|length }} шт.</span>
+    </div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr><th>№</th><th>Уязвимость</th><th>Заголовок</th><th>Статус</th><th>P</th><th>Исполнитель</th></tr>
+        </thead>
+        <tbody>
+          {% for t in tickets %}
+          <tr {% if selected and selected.number == t.number %}class="is-selected"{% endif %}>
+            <td class="mono"><a href="?id={{ t.number }}&view={{ view }}">{{ t.display_id }}</a></td>
+            <td class="mono"><a href="{% url 'vuln_detail' t.vulnerability.vuln_id %}">{{ t.vulnerability.vuln_id }}</a></td>
+            <td>{{ t.title|truncatechars:40 }}</td>
+            <td><span class="tag {% if t.status == 'resolved' %}tag-ok{% else %}tag-status{% endif %}">{{ t.status }}</span></td>
+            <td>{{ t.priority|upper }}</td>
+            <td>{% if t.assignee %}{{ t.assignee.display_name }}{% else %}—{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6">Заявок нет.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    {% if selected %}
+    <div class="panel-h"><h2>{{ selected.display_id }}</h2><span class="tag tag-status">{{ selected.status }}</span></div>
+    <div class="panel-b stack">
+      <div><b>{{ selected.title }}</b></div>
+      <div class="mono"><a href="{% url 'vuln_detail' selected.vulnerability.vuln_id %}">{{ selected.vulnerability.vuln_id }}</a></div>
+      <div style="color:var(--text-2)">{{ selected.description|linebreaksbr }}</div>
+      {% if selected.resolution %}<div class="alert ok">Устранение: {{ selected.resolution }}</div>{% endif %}
+
+      <div class="row" style="flex-wrap:wrap;gap:6px">
+        {% for a in actions %}
+          {% if a.action == 'assign' %}
+          <form method="post" action="{% url 'ticket_action' selected.number %}" class="row" style="gap:6px">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="assign" />
+            <select class="select" name="assignee_id" style="height:28px;width:auto">
+              {% for u in assignees %}<option value="{{ u.id }}">{{ u.display_name }} ({{ u.role }})</option>{% endfor %}
+            </select>
+            <button class="btn btn-sm btn-primary" type="submit">{{ a.label }}</button>
+          </form>
+          {% elif a.require_field %}
+          <button class="btn btn-sm" type="button" data-modal-open="modal-{{ a.action }}">{{ a.label }}</button>
+          {% else %}
+          <form method="post" action="{% url 'ticket_action' selected.number %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="{{ a.action }}" />
+            <button class="btn btn-sm {% if a.action == 'close' %}btn-primary{% endif %}" type="submit">{{ a.label }}</button>
+          </form>
+          {% endif %}
+        {% empty %}
+          <span style="color:var(--text-3)">Нет доступных действий для вашей роли.</span>
+        {% endfor %}
+      </div>
+
+      <h3 style="margin:12px 0 6px;font-size:13px">История</h3>
+      <div class="stack">
+        {% for e in selected.events.all %}
+        <div style="font-size:12px;border-left:2px solid var(--border);padding-left:8px">
+          <b>{{ e.created_at|date:"d.m H:i" }}</b>
+          {% if e.actor %} · {{ e.actor.display_name }}{% endif %}
+          {% if e.from_status %} · {{ e.from_status }} → {{ e.to_status }}{% endif %}
+          <div>{{ e.message }}</div>
+        </div>
+        {% empty %}
+        <div style="color:var(--text-3)">Событий пока нет.</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="panel-b">Выберите заявку слева.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-new">
+  <div class="modal">
+    <div class="modal-h"><h2>Новая заявка</h2><button type="button" data-modal-close>×</button></div>
+    <form method="post" action="{% url 'ticket_create' %}" class="modal-b stack-form">
+      {% csrf_token %}
+      <div class="field"><label>Уязвимость</label>
+        <select class="select" name="vuln_id" required>
+          {% for v in vulns %}<option value="{{ v.vuln_id }}">{{ v.vuln_id }} — {{ v.title|truncatechars:40 }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>Заголовок</label><input class="input" name="title" /></div>
+      <div class="field"><label>Приоритет</label>
+        <select class="select" name="priority"><option value="p1">P1</option><option value="p2" selected>P2</option><option value="p3">P3</option><option value="p4">P4</option></select>
+      </div>
+      <div class="field"><label>Описание</label><textarea class="input" name="description" rows="4"></textarea></div>
+      <button class="btn btn-primary" type="submit">Создать</button>
+    </form>
+  </div>
+</div>
+
+{% for a in actions %}
+{% if a.require_field and a.action != 'assign' %}
+<div class="modal-backdrop" id="modal-{{ a.action }}">
+  <div class="modal">
+    <div class="modal-h"><h2>{{ a.label }}</h2><button type="button" data-modal-close>×</button></div>
+    <form method="post" action="{% url 'ticket_action' selected.number %}" class="modal-b stack-form">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="{{ a.action }}" />
+      <div class="field">
+        <label>{% if a.require_field == 'resolution' %}Описание устранения{% elif a.require_field == 'waiting_reason' %}Причина ожидания{% elif a.require_field == 'reopen_reason' %}Причина возврата{% else %}Причина{% endif %}</label>
+        <textarea class="input" name="{{ a.require_field }}" rows="4" required></textarea>
+      </div>
+      <button class="btn btn-primary" type="submit">Подтвердить</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

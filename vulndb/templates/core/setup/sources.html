@@ -1,0 +1,18 @@
+{% extends "core/setup/base_wizard.html" %}
+{% block wizard_content %}
+<form method="post" class="panel">
+  {% csrf_token %}
+  <div class="panel-h"><h2>Источники данных</h2><span class="sub">NVD · KEV · БДУ</span></div>
+  <div class="panel-b stack">
+    <div class="field"><label>NVD API Key (опционально)</label><input class="input" name="nvd_api_key" value="{{ settings_obj.nvd_api_key }}" /></div>
+    <label class="row"><input class="checkbox" type="checkbox" name="nvd_enabled" {% if settings_obj.nvd_enabled %}checked{% endif %} /> NVD</label>
+    <label class="row"><input class="checkbox" type="checkbox" name="kev_enabled" {% if settings_obj.kev_enabled %}checked{% endif %} /> CISA KEV</label>
+    <label class="row"><input class="checkbox" type="checkbox" name="bdu_enabled" {% if settings_obj.bdu_enabled %}checked{% endif %} /> БДУ ФСТЭК</label>
+    <div class="field"><label>Расписание (подсказка)</label><input class="input" name="sync_cron_hint" value="{{ settings_obj.sync_cron_hint }}" /></div>
+  </div>
+  <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
+    <button class="btn" type="submit" name="action" value="back">Назад</button>
+    <button class="btn btn-primary" type="submit" name="action" value="next">Продолжить</button>
+  </div>
+</form>
+{% endblock %}

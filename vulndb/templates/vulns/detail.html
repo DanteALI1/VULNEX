@@ -1,0 +1,150 @@
+{% extends "base_app.html" %}
+{% block page_title %}{{ vuln.vuln_id }}{% endblock %}
+{% block crumbs %}<a href="{% url 'dashboard' %}">Дашборд</a><span>/</span><a href="{% url 'vuln_list' %}">Уязвимости</a><span>/</span><strong>{{ vuln.vuln_id }}</strong>{% endblock %}
+{% block top_actions %}
+<a class="btn btn-sm btn-primary" href="{% url 'ticket_list' %}">Создать заявку</a>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1 class="mono">{{ vuln.vuln_id }}</h1>
+    <p>{{ vuln.title }}</p>
+    <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">
+      {% if vuln.cvss_score %}<span class="tag {% if vuln.severity == 'CRITICAL' %}tag-crit{% elif vuln.severity == 'HIGH' %}tag-high{% else %}tag-status{% endif %}">{{ vuln.severity }} {{ vuln.cvss_score }}</span>{% endif %}
+      {% for b in vuln.badges %}<span class="tag {% if b == 'KEV' %}tag-kev{% elif b == 'LOCAL' %}tag-int{% else %}tag-status{% endif %}">{{ b }}</span>{% endfor %}
+      {% if vuln.bdu_id %}<span class="tag tag-status">{{ vuln.bdu_id }}</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="panel" style="margin-bottom:12px">
+  <div class="panel-h">
+    <h2>Описание</h2>
+    <div class="tabs" data-local-tabs>
+      <button type="button" class="tab is-active" data-tab="nvd">NVD</button>
+      <button type="button" class="tab" data-tab="bdu">BDU</button>
+    </div>
+  </div>
+  <div class="panel-b">
+    <div data-pane="nvd" class="is-active">{{ vuln.description_nvd|linebreaksbr|default:"Нет описания NVD." }}</div>
+    <div data-pane="bdu" style="display:none" class="">{{ vuln.description_bdu|linebreaksbr|default:"Нет описания BDU." }}</div>
+  </div>
+</div>
+
+<div class="panel" style="margin-bottom:12px">
+  <div class="panel-h">
+    <h2>Метрики CVSS</h2>
+    <div class="tabs" data-local-tabs>
+      <button type="button" class="tab is-active" data-tab="v31">3.1</button>
+      <button type="button" class="tab" data-tab="v30">3.0</button>
+      <button type="button" class="tab" data-tab="v2">2.0</button>
+      <button type="button" class="tab" data-tab="v40">4.0</button>
+    </div>
+  </div>
+  <div class="panel-b">
+    <div data-pane="v31" class="is-active">
+      {% with m=vuln.cvss_v31 %}
+      <div class="grid-2">
+        <div><div class="label">Score</div><div class="mono" style="font-size:22px">{{ m.score|default:"—" }}</div></div>
+        <div><div class="label">Severity</div><div>{{ m.severity|default:"—" }}</div></div>
+        <div style="grid-column:span 2"><div class="label">Vector</div><div class="mono">{{ m.vector|default:"—" }}</div></div>
+      </div>
+      {% endwith %}
+    </div>
+    <div data-pane="v30" style="display:none">
+      {% with m=vuln.cvss_v30 %}
+      <div class="grid-2">
+        <div><div class="label">Score</div><div class="mono" style="font-size:22px">{{ m.score|default:"—" }}</div></div>
+        <div><div class="label">Severity</div><div>{{ m.severity|default:"—" }}</div></div>
+        <div style="grid-column:span 2"><div class="label">Vector</div><div class="mono">{{ m.vector|default:"—" }}</div></div>
+      </div>
+      {% endwith %}
+    </div>
+    <div data-pane="v2" style="display:none">
+      {% with m=vuln.cvss_v2 %}
+      <div class="grid-2">
+        <div><div class="label">Score</div><div class="mono" style="font-size:22px">{{ m.score|default:"—" }}</div></div>
+        <div><div class="label">Severity</div><div>{{ m.severity|default:"—" }}</div></div>
+        <div style="grid-column:span 2"><div class="label">Vector</div><div class="mono">{{ m.vector|default:"—" }}</div></div>
+      </div>
+      {% endwith %}
+    </div>
+    <div data-pane="v40" style="display:none">
+      {% with m=vuln.cvss_v40 %}
+      <div class="grid-2">
+        <div><div class="label">Score</div><div class="mono" style="font-size:22px">{{ m.score|default:"—" }}</div></div>
+        <div><div class="label">Severity</div><div>{{ m.severity|default:"—" }}</div></div>
+        <div style="grid-column:span 2"><div class="label">Vector</div><div class="mono">{{ m.vector|default:"—" }}</div></div>
+      </div>
+      {% endwith %}
+    </div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:12px">
+  <div class="panel">
+    <div class="panel-h"><h2>CWE</h2></div>
+    <div class="panel-b">{% for c in vuln.cwe %}<span class="tag tag-status">{{ c }}</span> {% empty %}—{% endfor %}</div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h2>CPE</h2></div>
+    <div class="panel-b" style="max-height:160px;overflow:auto">
+      {% for c in vuln.cpe %}<div class="mono" style="font-size:11px">{{ c }}</div>{% empty %}—{% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="panel" style="margin-bottom:12px">
+  <div class="panel-h"><h2>References</h2></div>
+  <div class="panel-b stack">
+    {% for r in vuln.references %}<a href="{{ r }}" target="_blank" rel="noopener">{{ r }}</a>{% empty %}—{% endfor %}
+  </div>
+</div>
+
+{% if vuln.in_kev and vuln.kev_data %}
+<div class="panel" style="margin-bottom:12px">
+  <div class="panel-h"><h2>CISA KEV</h2></div>
+  <div class="panel-b">
+    <div class="alert warn">{{ vuln.kev_data.requiredAction|default:"В каталоге Known Exploited Vulnerabilities." }}</div>
+  </div>
+</div>
+{% endif %}
+
+<div class="panel">
+  <div class="panel-h"><h2>Связанные заявки</h2><a href="{% url 'ticket_list' %}">Все заявки</a></div>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>№</th><th>Статус</th><th>Заголовок</th></tr></thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td class="mono"><a href="{% url 'ticket_list' %}?id={{ t.number }}">{{ t.display_id }}</a></td>
+          <td><span class="tag tag-status">{{ t.status }}</span></td>
+          <td>{{ t.title }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">Заявок пока нет.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('[data-local-tabs]').forEach(function(bar){
+  bar.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      var name = tab.getAttribute('data-tab');
+      bar.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('is-active', t===tab); });
+      var root = bar.parentElement.parentElement;
+      root.querySelectorAll('[data-pane]').forEach(function(pane){
+        var on = pane.getAttribute('data-pane') === name;
+        pane.classList.toggle('is-active', on);
+        pane.style.display = on ? '' : 'none';
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

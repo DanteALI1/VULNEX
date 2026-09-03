@@ -1,0 +1,17 @@
+{% extends "core/setup/base_wizard.html" %}
+{% block wizard_content %}
+<form method="post" enctype="multipart/form-data" class="panel">
+  {% csrf_token %}
+  <div class="panel-h"><h2>Оформление</h2><span class="sub">Логотип и тексты login</span></div>
+  <div class="panel-b stack">
+    <div class="field"><label>Название продукта</label><input class="input" name="product_name" value="{{ settings_obj.product_name|default:'VULNDB' }}" /></div>
+    <div class="field"><label>Заголовок на странице входа</label><input class="input" name="login_title" value="{{ settings_obj.login_title }}" /></div>
+    <div class="field"><label>Текст на странице входа</label><textarea class="input" name="login_text" rows="4">{{ settings_obj.login_text }}</textarea></div>
+    <div class="field"><label>Логотип</label><input class="input" type="file" name="logo" accept="image/*" /></div>
+  </div>
+  <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
+    <button class="btn" type="submit" name="action" value="back">Назад</button>
+    <button class="btn btn-primary" type="submit" name="action" value="next">Продолжить</button>
+  </div>
+</form>
+{% endblock %}

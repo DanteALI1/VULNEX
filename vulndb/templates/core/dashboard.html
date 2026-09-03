@@ -1,0 +1,86 @@
+{% extends "base_app.html" %}
+{% block page_title %}Дашборд{% endblock %}
+{% block crumb_current %}Дашборд{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Дашборд</h1>
+    <p>Сводка по каталогу (NVD + локальные {{ prefix }}-*), KEV и заявкам. Обновлено {{ now|date:"d.m.Y H:i" }}.</p>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-primary" href="{% url 'vuln_list' %}">Открыть каталог</a>
+  </div>
+</div>
+
+<div class="grid-4" style="margin-bottom:12px">
+  <div class="panel kpi kpi-crit"><div class="label">Critical</div><div class="value">{{ critical }}</div></div>
+  <div class="panel kpi kpi-high"><div class="label">High</div><div class="value">{{ high }}</div></div>
+  <div class="panel kpi kpi-accent"><div class="label">В CISA KEV</div><div class="value">{{ kev }}</div></div>
+  <div class="panel kpi kpi-ok"><div class="label">Локальные {{ prefix }}-*</div><div class="value">{{ local_count }}</div></div>
+</div>
+
+<div class="grid-3" style="margin-bottom:12px">
+  <div class="panel">
+    <div class="panel-h"><h2>Источники</h2><a href="{% url 'app_settings' %}#sync">Управление</a></div>
+    <div class="panel-b stack">
+      {% for sync in syncs %}
+        <div class="alert {% if sync.status == 'ok' %}ok{% elif sync.status == 'error' %}warn{% else %}info{% endif %}">
+          {{ sync.get_source_display }} — {{ sync.status }}{% if sync.last_success_at %} · {{ sync.last_success_at|date:"d.m H:i" }}{% endif %}
+        </div>
+      {% empty %}
+        <div class="alert info">Синхронизации ещё не запускались. Настройте источники во вкладке «Синхронизации».</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="panel" style="grid-column: span 2">
+    <div class="panel-h"><h2>Severity</h2></div>
+    <div class="panel-b">
+      <div class="sev-stack">
+        <div class="sev-row"><span>Critical</span><div class="sev-track"><div class="sev-fill crit" style="width:{% widthratio critical 200 100 %}%"></div></div><span>{{ critical }}</span></div>
+        <div class="sev-row"><span>High</span><div class="sev-track"><div class="sev-fill high" style="width:{% widthratio high 500 100 %}%"></div></div><span>{{ high }}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <div class="panel-h"><h2>Требуют внимания</h2><a href="{% url 'vuln_list' %}">Каталог</a></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>ID</th><th>Severity</th><th>Метки</th></tr></thead>
+        <tbody>
+          {% for v in attention %}
+          <tr>
+            <td class="mono"><a href="{% url 'vuln_detail' v.vuln_id %}">{{ v.vuln_id }}</a></td>
+            <td><span class="tag {% if v.severity == 'CRITICAL' %}tag-crit{% else %}tag-high{% endif %}">{{ v.cvss_score|default:v.severity }}</span></td>
+            <td>{% for b in v.badges %}<span class="tag {% if b == 'KEV' %}tag-kev{% elif b == 'LOCAL' %}tag-int{% else %}tag-status{% endif %}">{{ b }}</span> {% endfor %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3">Пока нет записей. Запустите синхронизацию NVD.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h2>Заявки</h2><a href="{% url 'ticket_list' %}">Все</a></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>№</th><th>Статус</th><th>Уязвимость</th></tr></thead>
+        <tbody>
+          {% for t in open_tickets %}
+          <tr>
+            <td class="mono"><a href="{% url 'ticket_list' %}?id={{ t.number }}">{{ t.display_id }}</a></td>
+            <td><span class="tag tag-status">{{ t.status }}</span></td>
+            <td class="mono">{{ t.vulnerability.vuln_id }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3">Открытых заявок нет.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

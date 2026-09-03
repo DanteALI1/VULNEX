@@ -1,0 +1,21 @@
+{% extends "core/setup/base_wizard.html" %}
+{% block wizard_content %}
+<form method="post" class="panel">
+  {% csrf_token %}
+  <div class="panel-h"><h2>Почта</h2><span class="sub">SMTP для уведомлений</span></div>
+  <div class="panel-b stack">
+    <div class="grid-2">
+      <div class="field"><label>SMTP host</label><input class="input" name="smtp_host" value="{{ settings_obj.smtp_host }}" /></div>
+      <div class="field"><label>Port</label><input class="input" name="smtp_port" value="{{ settings_obj.smtp_port }}" /></div>
+      <div class="field"><label>User</label><input class="input" name="smtp_user" value="{{ settings_obj.smtp_user }}" /></div>
+      <div class="field"><label>Password</label><input class="input" type="password" name="smtp_password" /></div>
+      <div class="field"><label>From</label><input class="input" name="smtp_from" value="{{ settings_obj.smtp_from }}" /></div>
+    </div>
+    <label class="row"><input class="checkbox" type="checkbox" name="smtp_use_tls" {% if settings_obj.smtp_use_tls %}checked{% endif %} /> TLS</label>
+  </div>
+  <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
+    <button class="btn" type="submit" name="action" value="back">Назад</button>
+    <button class="btn btn-primary" type="submit" name="action" value="next">Продолжить</button>
+  </div>
+</form>
+{% endblock %}
