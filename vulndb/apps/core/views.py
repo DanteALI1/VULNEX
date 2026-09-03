@@ -131,7 +131,9 @@ def setup_wizard(request: HttpRequest) -> HttpResponse:
 
                 if s.nvd_enabled:
                     sync_nvd.delay()
-                if s.kev_enabled:
+                elif s.kev_enabled:
+                    # Keep KEV in sync with NVD (see sync_nvd implementation).
+                    # If NVD isn't enabled, we allow independent KEV sync.
                     sync_kev.delay()
                 if s.bdu_enabled:
                     sync_bdu.delay()
