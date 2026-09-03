@@ -1,0 +1,22 @@
+{% extends "base_app.html" %}
+{% block page_title %}Локальная уязвимость{% endblock %}
+{% block crumbs %}<a href="{% url 'vuln_list' %}">Уязвимости</a><span>/</span><strong>Создать {{ prefix }}-*</strong>{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Создать локальную уязвимость</h1><p>ID будет вида <span class="mono">{{ prefix }}-YYYY-NNNN</span>.</p></div></div>
+<div class="panel">
+  <form method="post" class="panel-b stack-form">
+    {% csrf_token %}
+    <div class="field"><label>Заголовок</label><input class="input" name="title" required /></div>
+    <div class="field"><label>Описание</label><textarea class="input" name="description" rows="6"></textarea></div>
+    <div class="grid-2">
+      <div class="field"><label>Severity</label>
+        <select class="select" name="severity">
+          <option>CRITICAL</option><option selected>HIGH</option><option>MEDIUM</option><option>LOW</option>
+        </select>
+      </div>
+      <div class="field"><label>CVSS score</label><input class="input" name="cvss_score" type="number" step="0.1" min="0" max="10" /></div>
+    </div>
+    <button class="btn btn-primary" type="submit">Создать</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Лицензия · {{ brand.product_name }}{% endblock %}
+{% block body %}
+<div class="auth-page" style="grid-template-columns:1fr">
+  <main class="auth-panel" style="max-width:520px;margin:auto">
+    <div class="auth-card">
+      <h2>Доступ заблокирован</h2>
+      <p class="lead">Лицензия VULNDB недействительна и grace-период истёк.</p>
+      <div class="alert warn">{{ license_status.message }}</div>
+      <p>Fingerprint: <span class="mono">{{ license_status.fingerprint }}</span></p>
+      <a class="btn btn-primary" href="{% url 'app_settings' %}#license">К настройкам лицензии</a>
+    </div>
+  </main>
+</div>
+{% endblock %}

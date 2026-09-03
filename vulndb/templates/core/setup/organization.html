@@ -1,0 +1,16 @@
+{% extends "core/setup/base_wizard.html" %}
+{% block wizard_content %}
+<form method="post" class="panel">
+  {% csrf_token %}
+  <div class="panel-h"><h2>Организация</h2><span class="sub">Префикс локальных ID</span></div>
+  <div class="panel-b stack">
+    <div class="field"><label>Название организации</label><input class="input" name="organization_name" value="{{ settings_obj.organization_name }}" required /></div>
+    <div class="field"><label>Префикс локальных ID</label><input class="input" id="org-prefix" name="local_id_prefix" value="{{ settings_obj.local_id_prefix|default:'ACME' }}" maxlength="16" required /></div>
+    <div class="alert info">Превью: <span class="mono" id="id-preview">ACME-2026-0001</span>. Запрещены CVE и BDU.</div>
+  </div>
+  <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
+    <button class="btn" type="submit" name="action" value="back">Назад</button>
+    <button class="btn btn-primary" type="submit" name="action" value="next">Продолжить</button>
+  </div>
+</form>
+{% endblock %}

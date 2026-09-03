@@ -1,0 +1,115 @@
+{% extends "base_app.html" %}
+{% block page_title %}Уязвимости{% endblock %}
+{% block crumbs %}<a href="{% url 'dashboard' %}">Дашборд</a><span>/</span><strong>Уязвимости</strong>{% endblock %}
+{% block top_actions %}
+<a class="btn btn-sm btn-primary" href="{% url 'vuln_create_local' %}">Создать локальную</a>
+{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Каталог уязвимостей</h1>
+    <p>Канон NVD + обогащение KEV/BDU + локальные карточки <span class="mono">{{ prefix }}-YYYY-NNNN</span>. Найдено {{ total }}.</p>
+  </div>
+</div>
+
+<div class="panel" style="margin-bottom:12px">
+  <form method="get" class="filter-panel" id="filters">
+    <button class="filter-panel-toggle" type="button" data-collapse aria-expanded="true">
+      <span>
+        <strong style="font-size:13px">Фильтры поиска</strong>
+        <span style="color:var(--text-3);font-size:12px;margin-left:8px">нажмите, чтобы свернуть / развернуть</span>
+      </span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+
+    {% if chips %}
+    <div class="filter-chips">
+      {% for key, label in chips %}
+      <span class="chip">{{ label }}</span>
+      {% endfor %}
+      <a class="chip" href="{% url 'vuln_list' %}">Сбросить ×</a>
+    </div>
+    {% endif %}
+
+    <div class="filter-panel-body">
+      <div class="filter-grid">
+        <div class="field">
+          <label>Строка поиска</label>
+          <input class="input" name="q" value="{{ filters.q }}" placeholder="ID, текст, CPE…" />
+        </div>
+        <div class="field">
+          <label>Тип записи</label>
+          <select class="select" name="type">
+            <option value="">Все</option>
+            <option value="cve" {% if filters.type == 'cve' %}selected{% endif %}>Только CVE (NVD)</option>
+            <option value="bdu" {% if filters.type == 'bdu' %}selected{% endif %}>С привязкой BDU</option>
+            <option value="local" {% if filters.type == 'local' %}selected{% endif %}>Только локальные ({{ prefix }}-…)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>CVSS min</label>
+          <input class="input" type="number" min="0" max="10" step="0.1" name="cvss_min" value="{{ filters.cvss_min }}" />
+        </div>
+        <div class="field">
+          <label>CVSS max</label>
+          <input class="input" type="number" min="0" max="10" step="0.1" name="cvss_max" value="{{ filters.cvss_max }}" />
+        </div>
+        <div class="filter-group">
+          <h3>Severity</h3>
+          <div class="check-list">
+            <label><input class="checkbox" type="checkbox" name="severity" value="CRITICAL" {% if 'CRITICAL' in filters.severity %}checked{% endif %} /> Critical</label>
+            <label><input class="checkbox" type="checkbox" name="severity" value="HIGH" {% if 'HIGH' in filters.severity %}checked{% endif %} /> High</label>
+            <label><input class="checkbox" type="checkbox" name="severity" value="MEDIUM" {% if 'MEDIUM' in filters.severity %}checked{% endif %} /> Medium</label>
+            <label><input class="checkbox" type="checkbox" name="severity" value="LOW" {% if 'LOW' in filters.severity %}checked{% endif %} /> Low</label>
+          </div>
+        </div>
+        <div class="filter-group">
+          <h3>Метки</h3>
+          <div class="check-list">
+            <label><input class="checkbox" type="checkbox" name="kev" value="1" {% if filters.kev %}checked{% endif %} /> KEV</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>За период (дней)</label>
+          <input class="input" type="number" name="days" value="{{ filters.days }}" placeholder="например 90" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn btn-primary" type="submit">Применить</button>
+        <a class="btn" href="{% url 'vuln_list' %}">Сбросить</a>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="panel">
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Заголовок</th>
+          <th>Severity</th>
+          <th>CVSS</th>
+          <th>Метки</th>
+          <th>Обновлено</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vulns %}
+        <tr>
+          <td class="mono"><a href="{% url 'vuln_detail' v.vuln_id %}">{{ v.vuln_id }}</a></td>
+          <td>{{ v.title|truncatechars:80 }}</td>
+          <td><span class="tag {% if v.severity == 'CRITICAL' %}tag-crit{% elif v.severity == 'HIGH' %}tag-high{% else %}tag-status{% endif %}">{{ v.severity|default:"—" }}</span></td>
+          <td class="mono">{{ v.cvss_score|default:"—" }}</td>
+          <td>{% for b in v.badges %}<span class="tag {% if b == 'KEV' %}tag-kev{% elif b == 'LOCAL' %}tag-int{% else %}tag-status{% endif %}">{{ b }}</span> {% endfor %}</td>
+          <td>{{ v.modified_at|date:"d.m.Y"|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">Нет записей. Запустите синхронизацию или создайте локальную уязвимость.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

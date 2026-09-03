@@ -1,0 +1,96 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: vulndb
+      POSTGRES_USER: vulndb
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vulndb_dev_password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vulndb -d vulndb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://vulndb:${POSTGRES_PASSWORD:-vulndb_dev_password}@db:5432/vulndb
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      LICENSE_SERVER_URL: http://license_server:8090
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --reload --workers 2"
+
+  worker:
+    build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://vulndb:${POSTGRES_PASSWORD:-vulndb_dev_password}@db:5432/vulndb
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - redis
+    command: celery -A config worker -l info
+
+  beat:
+    build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://vulndb:${POSTGRES_PASSWORD:-vulndb_dev_password}@db:5432/vulndb
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - .:/app
+    depends_on:
+      - worker
+    command: celery -A config beat -l info
+
+  license_server:
+    build:
+      context: .
+      dockerfile: license_server/Dockerfile
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./license_server:/app
+
+volumes:
+  pgdata:
+  media_data:

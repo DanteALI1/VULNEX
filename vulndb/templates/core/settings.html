@@ -1,0 +1,137 @@
+{% extends "base_app.html" %}
+{% block page_title %}Настройки{% endblock %}
+{% block crumbs %}<a href="{% url 'dashboard' %}">Дашборд</a><span>/</span><strong>Настройки</strong>{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Настройки</h1><p>Разделы вкладками. Синхронизации — здесь же, не отдельным пунктом меню.</p></div></div>
+
+<div class="panel">
+  <div class="settings-tabs" data-tabs="settings">
+    <a href="#org" data-tab="org" class="is-active">Организация</a>
+    <a href="#branding" data-tab="branding">Оформление</a>
+    <a href="#sources" data-tab="sources">Источники</a>
+    <a href="#sync" data-tab="sync">Синхронизации</a>
+    <a href="#mail" data-tab="mail">Почта</a>
+    <a href="#telegram" data-tab="telegram">Telegram</a>
+    <a href="#license" data-tab="license">Лицензия</a>
+    <a href="#database" data-tab="database">База данных</a>
+  </div>
+
+  <div class="panel-b">
+    <section id="org" data-tab-pane="settings" data-pane-id="org" class="is-active stack">
+      <form method="post" class="stack-form">
+        {% csrf_token %}<input type="hidden" name="section" value="org" />
+        <div class="field"><label>Организация</label><input class="input" name="organization_name" value="{{ settings_obj.organization_name }}" /></div>
+        <div class="field"><label>Префикс ID</label><input class="input" name="local_id_prefix" value="{{ settings_obj.local_id_prefix }}" /></div>
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+      </form>
+    </section>
+
+    <section id="branding" data-tab-pane="settings" data-pane-id="branding" class="stack" style="display:none">
+      <form method="post" enctype="multipart/form-data" class="stack-form">
+        {% csrf_token %}<input type="hidden" name="section" value="branding" />
+        <div class="field"><label>Продукт</label><input class="input" name="product_name" value="{{ settings_obj.product_name }}" /></div>
+        <div class="field"><label>Заголовок login</label><input class="input" name="login_title" value="{{ settings_obj.login_title }}" /></div>
+        <div class="field"><label>Текст login</label><textarea class="input" name="login_text" rows="4">{{ settings_obj.login_text }}</textarea></div>
+        <div class="field"><label>Логотип</label><input class="input" type="file" name="logo" /></div>
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+      </form>
+    </section>
+
+    <section id="sources" data-tab-pane="settings" data-pane-id="sources" class="stack" style="display:none">
+      <form method="post" class="stack-form">
+        {% csrf_token %}<input type="hidden" name="section" value="sources" />
+        <div class="field"><label>NVD API Key</label><input class="input" name="nvd_api_key" value="{{ settings_obj.nvd_api_key }}" /></div>
+        <label class="row"><input class="checkbox" type="checkbox" name="nvd_enabled" {% if settings_obj.nvd_enabled %}checked{% endif %} /> NVD</label>
+        <label class="row"><input class="checkbox" type="checkbox" name="kev_enabled" {% if settings_obj.kev_enabled %}checked{% endif %} /> KEV</label>
+        <label class="row"><input class="checkbox" type="checkbox" name="bdu_enabled" {% if settings_obj.bdu_enabled %}checked{% endif %} /> БДУ</label>
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+      </form>
+    </section>
+
+    <section id="sync" data-tab-pane="settings" data-pane-id="sync" class="stack" style="display:none">
+      <div class="stack">
+        {% for sync in syncs %}
+        <div class="alert {% if sync.status == 'ok' %}ok{% elif sync.status == 'error' %}warn{% else %}info{% endif %}">
+          <b>{{ sync.get_source_display }}</b> — {{ sync.status }}
+          {% if sync.last_success_at %} · {{ sync.last_success_at|date:"d.m.Y H:i" }}{% endif %}
+          {% if sync.last_error %}<div>{{ sync.last_error }}</div>{% endif %}
+        </div>
+        {% empty %}
+        <div class="alert info">Синхронизации ещё не выполнялись.</div>
+        {% endfor %}
+      </div>
+      <form method="post" class="row" style="gap:8px;flex-wrap:wrap">
+        {% csrf_token %}<input type="hidden" name="section" value="sync" />
+        <button class="btn" name="run_sync" value="nvd" type="submit">Синхронизировать NVD</button>
+        <button class="btn" name="run_sync" value="kev" type="submit">Синхронизировать KEV</button>
+        <button class="btn" name="run_sync" value="bdu" type="submit">Синхронизировать БДУ</button>
+      </form>
+    </section>
+
+    <section id="mail" data-tab-pane="settings" data-pane-id="mail" class="stack" style="display:none">
+      <form method="post" class="stack-form">
+        {% csrf_token %}<input type="hidden" name="section" value="mail" />
+        <div class="grid-2">
+          <div class="field"><label>Host</label><input class="input" name="smtp_host" value="{{ settings_obj.smtp_host }}" /></div>
+          <div class="field"><label>Port</label><input class="input" name="smtp_port" value="{{ settings_obj.smtp_port }}" /></div>
+          <div class="field"><label>User</label><input class="input" name="smtp_user" value="{{ settings_obj.smtp_user }}" /></div>
+          <div class="field"><label>Password</label><input class="input" type="password" name="smtp_password" /></div>
+          <div class="field"><label>From</label><input class="input" name="smtp_from" value="{{ settings_obj.smtp_from }}" /></div>
+        </div>
+        <label class="row"><input class="checkbox" type="checkbox" name="smtp_use_tls" {% if settings_obj.smtp_use_tls %}checked{% endif %} /> TLS</label>
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+      </form>
+    </section>
+
+    <section id="telegram" data-tab-pane="settings" data-pane-id="telegram" class="stack" style="display:none">
+      <form method="post" class="stack-form">
+        {% csrf_token %}<input type="hidden" name="section" value="telegram" />
+        <div class="field"><label>Bot token</label><input class="input" name="telegram_bot_token" value="{{ settings_obj.telegram_bot_token }}" /></div>
+        <div class="field"><label>Chat ID</label><input class="input" name="telegram_chat_id" value="{{ settings_obj.telegram_chat_id }}" /></div>
+        <label class="row"><input class="checkbox" type="checkbox" name="telegram_enabled" {% if settings_obj.telegram_enabled %}checked{% endif %} /> Включено</label>
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+      </form>
+    </section>
+
+    <section id="license" data-tab-pane="settings" data-pane-id="license" class="stack" style="display:none">
+      <div class="alert {% if license_status.valid %}ok{% else %}warn{% endif %}">{{ license_status.message }} · {{ license_status.license_id }}</div>
+      <div>Fingerprint: <span class="mono">{{ license_status.fingerprint }}</span></div>
+    </section>
+
+    <section id="database" data-tab-pane="settings" data-pane-id="database" class="stack" style="display:none">
+      <div class="alert info">Параметры БД (пароль хранится в `.env`, не в UI).</div>
+      <div class="grid-2">
+        <div class="field"><label>Host</label><input class="input" value="{{ settings_obj.db_host }}" readonly /></div>
+        <div class="field"><label>Port</label><input class="input" value="{{ settings_obj.db_port }}" readonly /></div>
+        <div class="field"><label>DB</label><input class="input" value="{{ settings_obj.db_name }}" readonly /></div>
+        <div class="field"><label>User</label><input class="input" value="{{ settings_obj.db_user }}" readonly /></div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('[data-tabs]').forEach(function(nav){
+  var scope = nav.getAttribute('data-tabs');
+  function activate(id){
+    nav.querySelectorAll('a').forEach(function(x){ x.classList.toggle('is-active', (x.getAttribute('data-tab')||'')===id); });
+    document.querySelectorAll('[data-tab-pane="'+scope+'"]').forEach(function(pane){
+      var on = pane.id===id || pane.getAttribute('data-pane-id')===id;
+      pane.classList.toggle('is-active', on);
+      pane.style.display = on ? '' : 'none';
+    });
+  }
+  nav.querySelectorAll('a').forEach(function(link){
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      var id = link.getAttribute('data-tab');
+      activate(id);
+      if (history.replaceState) history.replaceState(null,'','#'+id);
+    });
+  });
+  var hash = (location.hash||'').replace('#','') || 'org';
+  activate(hash);
+});
+</script>
+{% endblock %}

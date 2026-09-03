@@ -1,0 +1,15 @@
+[Unit]
+Description=VULNDB Celery worker
+After=network.target redis.service postgresql.service
+
+[Service]
+User=vulndb
+Group=vulndb
+WorkingDirectory=/opt/vulndb
+EnvironmentFile=/opt/vulndb/.env
+ExecStart=/opt/vulndb/.venv/bin/celery -A config worker -l info
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

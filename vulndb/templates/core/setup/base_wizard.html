@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Мастер настройки · {{ brand.product_name }}{% endblock %}
+{% block body %}
+<div class="wizard-shell">
+  <header class="topbar" style="position:static">
+    <div class="brand" style="border:0;padding:0;height:auto">
+      <div class="brand-mark">{{ brand.mark }}</div>
+      <div class="brand-text"><strong>{{ brand.product_name }}</strong><span>Первичная настройка</span></div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <span style="font-size:12px;color:var(--text-3)">Шаг {{ step }} из 9</span>
+  </header>
+  <div class="wizard-body">
+    <div class="steps-scroll">
+      {% for s in steps %}
+      <div class="step {% if s.done %}is-done{% endif %} {% if s.active %}is-active{% endif %}"><span>{{ s.num|stringformat:"02d" }}</span><b>{{ s.title }}</b></div>
+      {% endfor %}
+    </div>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}warn{% else %}info{% endif %}" style="margin-bottom:12px">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    {% block wizard_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

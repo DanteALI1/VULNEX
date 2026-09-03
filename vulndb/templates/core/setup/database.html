@@ -1,0 +1,93 @@
+{% extends "core/setup/base_wizard.html" %}
+{% block wizard_content %}
+<form method="post" class="panel" id="db-form">
+  {% csrf_token %}
+  <div class="panel-h"><h2>Подключение PostgreSQL</h2><span class="sub">УЗ в БД ≠ админ веб-интерфейса VULNDB</span></div>
+  <div class="panel-b stack">
+    <div class="alert info">
+      Нужна отдельная <b>учётная запись PostgreSQL</b> с правами на базу приложения.
+      Если УЗ ещё нет — вкладка «Создать УЗ и базу» (пароль superuser не сохраняется).
+    </div>
+
+    {% if compose_mode %}
+    <div class="alert ok">
+      Обнаружен Docker Compose / DATABASE_URL. Можно проверить и продолжить без ручного ввода.
+      <label class="row" style="margin-top:8px"><input class="checkbox" type="checkbox" name="compose_ok" value="1" checked /> Использовать текущее подключение Compose</label>
+    </div>
+    {% endif %}
+
+    <div class="source-toggle" role="tablist" style="align-self:flex-start">
+      <button type="button" class="is-active" id="tab-conn">Подключиться</button>
+      <button type="button" id="tab-create">Создать УЗ и базу</button>
+    </div>
+    <input type="hidden" name="db_mode" id="db_mode" value="connect" />
+
+    <div id="pane-conn" class="stack">
+      <div class="grid-2">
+        <div class="field"><label>Host</label><input class="input" name="db_host" value="{{ settings_obj.db_host|default:'127.0.0.1' }}" /></div>
+        <div class="field"><label>Port</label><input class="input" name="db_port" value="{{ settings_obj.db_port|default:5432 }}" /></div>
+        <div class="field"><label>Имя базы</label><input class="input" name="db_name" value="{{ settings_obj.db_name|default:'vulndb' }}" /></div>
+        <div class="field"><label>SSL</label>
+          <select class="select" name="db_sslmode">
+            <option value="disable">disable</option>
+            <option value="prefer" selected>prefer</option>
+            <option value="require">require</option>
+          </select>
+        </div>
+        <div class="field"><label>Пользователь БД (УЗ)</label><input class="input" name="db_user" value="{{ settings_obj.db_user|default:'vulndb' }}" autocomplete="off" /></div>
+        <div class="field"><label>Пароль УЗ</label><input class="input" type="password" name="db_password" autocomplete="new-password" /></div>
+      </div>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn" type="button" id="btn-test">Проверить подключение</button>
+        <span id="test-result" class="tag"></span>
+      </div>
+    </div>
+
+    <div id="pane-create" class="stack" hidden>
+      <div class="alert warn" style="margin:0">
+        Superuser используется один раз для CREATE USER / CREATE DATABASE / GRANT и <b>не сохраняется</b> в VULNDB.
+      </div>
+      <div class="alert info" style="margin:0">Host/Port/имя БД/имя УЗ и пароль новой УЗ возьмите из полей выше (вкладка подставляет те же поля формы).</div>
+      <div class="grid-2">
+        <div class="field"><label>Superuser</label><input class="input" name="pg_superuser" value="postgres" /></div>
+        <div class="field"><label>Пароль superuser</label><input class="input" type="password" name="pg_super_password" autocomplete="off" /></div>
+        <div class="field"><label>Повтор пароля новой УЗ</label><input class="input" type="password" name="db_password2" /></div>
+      </div>
+      <button class="btn" type="button" id="btn-create">Создать УЗ и выдать права</button>
+      <span id="create-result" class="tag"></span>
+    </div>
+  </div>
+  <div class="panel-b row" style="justify-content:flex-end;gap:8px;border-top:1px solid var(--border)">
+    <button class="btn" type="submit" name="action" value="back">Назад</button>
+    <button class="btn btn-primary" type="submit" name="action" value="next">Сохранить и продолжить</button>
+  </div>
+</form>
+<script>
+(function(){
+  var tabConn = document.getElementById('tab-conn');
+  var tabCreate = document.getElementById('tab-create');
+  var paneConn = document.getElementById('pane-conn');
+  var paneCreate = document.getElementById('pane-create');
+  var mode = document.getElementById('db_mode');
+  tabConn.addEventListener('click', function(){ tabConn.classList.add('is-active'); tabCreate.classList.remove('is-active'); paneConn.hidden=false; paneCreate.hidden=true; mode.value='connect'; });
+  tabCreate.addEventListener('click', function(){ tabCreate.classList.add('is-active'); tabConn.classList.remove('is-active'); paneConn.hidden=true; paneCreate.hidden=false; mode.value='create'; });
+  function csrf(){ return document.querySelector('[name=csrfmiddlewaretoken]').value; }
+  function formData(){ return new FormData(document.getElementById('db-form')); }
+  document.getElementById('btn-test').addEventListener('click', function(){
+    fetch('{% url "setup_db_test" %}', {method:'POST', headers:{'X-CSRFToken': csrf()}, body: formData()})
+      .then(r=>r.json()).then(function(d){
+        var el=document.getElementById('test-result');
+        el.textContent=d.message; el.className='tag '+(d.ok?'tag-ok':'tag-crit');
+      });
+  });
+  document.getElementById('btn-create').addEventListener('click', function(){
+    var fd=formData(); fd.set('db_mode','create');
+    fetch('{% url "setup_db_create" %}', {method:'POST', headers:{'X-CSRFToken': csrf()}, body: fd})
+      .then(r=>r.json()).then(function(d){
+        var el=document.getElementById('create-result');
+        el.textContent=d.message; el.className='tag '+(d.ok?'tag-ok':'tag-crit');
+      });
+  });
+})();
+</script>
+{% endblock %}

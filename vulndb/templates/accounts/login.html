@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Вход · {{ brand.product_name }}{% endblock %}
+{% block body %}
+<div class="auth-page">
+  <aside class="auth-visual">
+    <div class="cyber-stage" aria-hidden="true">
+      <div class="cyber-grid"></div>
+      <div class="cyber-ring"></div>
+      <div class="cyber-hex h1"></div>
+      <div class="cyber-hex h2"></div>
+      <div class="cyber-hex h3"></div>
+      <div class="cyber-nodes"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="cyber-scan"></div>
+    </div>
+    <div class="brand" style="border:0;padding:0;height:auto">
+      {% if brand.logo %}
+        <img class="brand-mark logo-img lg" src="{{ brand.logo.url }}" alt="" style="width:48px;height:48px;object-fit:cover" />
+      {% else %}
+        <div class="brand-mark logo-img lg" style="width:48px;height:48px;font-size:16px">{{ brand.mark }}</div>
+      {% endif %}
+      <div class="brand-text">
+        <strong>{{ brand.product_name }}</strong>
+        <span>{% if brand.organization_name %}{{ brand.organization_name }} · {% endif %}Vulnerability Database</span>
+      </div>
+    </div>
+    <h1>{{ brand.login_title }}</h1>
+    <p>{{ brand.login_text }}</p>
+    <div class="features">
+      <div class="feat"><i></i><span>Единая карточка: CVE + KEV + BDU + локальный ID</span></div>
+      <div class="feat"><i></i><span>Заявки с ролями, SLA и подтверждением закрытия</span></div>
+      <div class="feat"><i></i><span>Без саморегистрации — только учётки администратора</span></div>
+    </div>
+  </aside>
+  <main class="auth-panel">
+    <form class="auth-card" method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <h2>Вход в систему</h2>
+      <p class="lead">Учётные записи создаёт администратор. Саморегистрация отключена.</p>
+      {% if form.errors %}
+        <div class="alert warn">Неверный логин или пароль.</div>
+      {% endif %}
+      <div class="stack-form">
+        <div class="field">
+          <label for="id_username">Логин</label>
+          <input class="input" id="id_username" name="username" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="id_password">Пароль</label>
+          <input class="input" id="id_password" name="password" type="password" autocomplete="current-password" required />
+        </div>
+        <label class="row" style="font-size:12.5px;color:var(--text-2)">
+          <input class="checkbox" type="checkbox" name="remember" /> Запомнить на этом компьютере
+        </label>
+        <input type="hidden" name="next" value="{{ next }}" />
+        <button class="btn btn-primary" type="submit">Войти</button>
+      </div>
+      <div class="auth-meta">{{ brand.product_name }} · Vulnerability Database</div>
+    </form>
+  </main>
+</div>
+{% endblock %}
