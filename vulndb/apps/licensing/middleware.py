@@ -1,6 +1,6 @@
 from django.http import HttpResponse
+from django.conf import settings
 from django.shortcuts import render
-from django.urls import reverse
 
 
 SKIP = ("/static/", "/media/", "/healthz", "/readyz", "/setup/", "/accounts/login")
@@ -15,6 +15,9 @@ class LicenseGateMiddleware:
         if any(path.startswith(p) for p in SKIP):
             return self.get_response(request)
         try:
+            # Free edition: не блокируем без лицензии.
+            if not settings.LICENSE_REQUIRED:
+                return self.get_response(request)
             from vulndb.apps.core.models import SystemSettings
             from vulndb.apps.licensing.services import get_license_status
 
