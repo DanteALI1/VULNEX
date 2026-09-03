@@ -8,6 +8,10 @@ from vulndb.apps.licensing.services import get_license_status, machine_fingerpri
 
 @shared_task
 def license_heartbeat():
+    # Free edition: не делаем онлайн-проверку/heartbeat.
+    if not getattr(settings, "LICENSE_REQUIRED", False):
+        return {"skipped": True}
+
     import requests
 
     st = get_license_status()

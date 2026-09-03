@@ -80,6 +80,20 @@ def _verify_payload(payload: dict) -> bool:
 
 
 def get_license_status() -> dict:
+    # Free edition: лицензия не обязательна.
+    # Используем флаг из settings, чтобы не блокировать UI без .novalic.
+    if not getattr(settings, "LICENSE_REQUIRED", False):
+        return {
+            "valid": True,
+            "grace": False,
+            "status": "free",
+            "license_id": "FREE",
+            "customer": "Free edition",
+            "fingerprint": machine_fingerprint(),
+            "last_verified_at": timezone.now(),
+            "message": "Лицензия не требуется (Free edition).",
+        }
+
     try:
         state = LicenseState.objects.filter(pk=1).first()
     except Exception:

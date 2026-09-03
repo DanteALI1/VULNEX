@@ -154,6 +154,12 @@ CELERY_BEAT_SCHEDULE = {
 LICENSE_SERVER_URL = os.getenv("LICENSE_SERVER_URL", "http://license_server:8090")
 LICENSE_FILE = os.getenv("LICENSE_FILE", str(BASE_DIR / ".novalic"))
 LICENSE_GRACE_DAYS = int(os.getenv("LICENSE_GRACE_DAYS", "14"))
+#
+# Free edition:
+# Если VULNDB_LICENSE_REQUIRED=1 — включаем строгую проверку лицензии.
+# По умолчанию считаем, что лицензия НЕ обязательна (для бесплатной версии).
+#
+LICENSE_REQUIRED = os.getenv("VULNDB_LICENSE_REQUIRED", "0") == "1"
 ENV_FILE_PATH = os.getenv("ENV_FILE_PATH", str(BASE_DIR / ".env"))
 
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
