@@ -116,6 +116,7 @@
         <div class="settings-group">
           <h3>Локальные учётки</h3>
           <label class="row"><input class="checkbox" type="checkbox" name="auth_local_enabled" {% if settings_obj.auth_local_enabled %}checked{% endif %} /> Логин/пароль</label>
+          <p class="hint">Новых пользователей создаёт только администратор в разделе <a href="{% url 'user_list' %}">Пользователи</a>. Саморегистрации нет.</p>
           <div class="field"><label>Блокировка после N неудачных попыток</label><input class="input" type="number" min="3" name="auth_lockout_attempts" value="{{ settings_obj.auth_lockout_attempts }}" /></div>
           <label class="row"><input class="checkbox" type="checkbox" name="auth_mfa_recommended" {% if settings_obj.auth_mfa_recommended %}checked{% endif %} /> Рекомендовать MFA (план)</label>
         </div>

@@ -2,27 +2,22 @@
 # =============================================================================
 # VULNDB — установка стека и приложения (РЕД ОС 8 / RHEL-подобные: dnf)
 #
-# Что делает:
-#   1) ставит PostgreSQL, Redis, Python, Nginx, firewalld, build-deps
-#   2) создаёт УЗ/БД PostgreSQL и настраивает Redis
-#   3) создаёт системного пользователя vulndb и каталоги
-#   4) копирует/клонирует код, venv, .env, migrate, collectstatic
-#   5) включает systemd (web/worker/beat) и Nginx
+# Пароль существующей УЗ postgres ЗНАТЬ НЕ НУЖНО.
+# Скрипт заходит в PostgreSQL через peer:  sudo -u postgres psql
+# и сам ЗАДАЁТ новые пароли (роль приложения, опционально суперпользователь
+# postgres, веб-админ). В конце печатает все данные и пишет копию в файл.
 #
-# Запуск (от root или через sudo):
-#   curl -fsSL ... | sudo bash   # или
 #   sudo bash scripts/install-vulndb.sh
 #
-# Переменные окружения (опционально):
-#   VULNDB_REPO_URL     — git URL (если код ещё не на диске)
-#   VULNDB_SRC_DIR      — путь к уже распакованному коду (по умолчанию: каталог скрипта/..)
-#   VULNDB_INSTALL_DIR  — /opt/vulndb
-#   VULNDB_DOMAIN       — hostname для Nginx (по умолчанию: IP или vulndb.local)
-#   VULNDB_DB_PASSWORD  — пароль УЗ PostgreSQL (иначе генерируется)
-#   VULNDB_SECRET_KEY   — Django SECRET_KEY (иначе генерируется)
-#   VULNDB_SKIP_FIREWALL=1
-#   VULNDB_SKIP_NGINX=1
-#   VULNDB_ASSUME_YES=1 — без интерактивных вопросов
+# Переменные (если заданы — вопросы не задаются):
+#   VULNDB_DB_PASSWORD          пароль роли БД vulndb
+#   VULNDB_POSTGRES_PASSWORD    пароль суперпользователя PostgreSQL (роль postgres)
+#   VULNDB_ADMIN_USER           логин веб-админа (по умолчанию admin)
+#   VULNDB_ADMIN_PASSWORD       пароль веб-админа
+#   VULNDB_ADMIN_NAME           ФИО веб-админа
+#   VULNDB_SECRET_KEY
+#   VULNDB_DOMAIN
+#   VULNDB_ASSUME_YES=1         без вопросов, пароли генерируются
 # =============================================================================
 set -euo pipefail
 
@@ -41,11 +36,16 @@ APP_USER="${VULNDB_USER:-vulndb}"
 DB_NAME="${VULNDB_DB_NAME:-vulndb}"
 DB_USER="${VULNDB_DB_USER:-vulndb}"
 DB_PASSWORD="${VULNDB_DB_PASSWORD:-}"
+PG_SUPER_PASSWORD="${VULNDB_POSTGRES_PASSWORD:-}"
+ADMIN_USER="${VULNDB_ADMIN_USER:-admin}"
+ADMIN_PASSWORD="${VULNDB_ADMIN_PASSWORD:-}"
+ADMIN_NAME="${VULNDB_ADMIN_NAME:-}"
 SECRET_KEY="${VULNDB_SECRET_KEY:-}"
 DOMAIN="${VULNDB_DOMAIN:-}"
 REPO_URL="${VULNDB_REPO_URL:-}"
 SKIP_FIREWALL="${VULNDB_SKIP_FIREWALL:-0}"
 SKIP_NGINX="${VULNDB_SKIP_NGINX:-0}"
+PG_SERVICE=""
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEFAULT_SRC="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -68,6 +68,77 @@ rand_hex() {
   fi
 }
 
+urlencode() {
+  V="$1" python3 -c "from urllib.parse import quote; import os; print(quote(os.environ['V'], safe=''))"
+}
+
+set_role_password() {
+  local role="$1" pw="$2"
+  [[ "$role" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || die "Некорректное имя роли PostgreSQL: $role"
+  DB_ROLE="$role" DB_PW="$pw" python3 - <<'PY'
+import os, subprocess
+role = os.environ["DB_ROLE"]
+pw = os.environ["DB_PW"].replace("'", "''")
+sql = "ALTER USER %s WITH PASSWORD '%s';" % (role, pw)
+subprocess.check_call(["sudo", "-u", "postgres", "psql", "-v", "ON_ERROR_STOP=1", "-c", sql])
+PY
+}
+
+prompt_line() {
+  local prompt="$1" default="${2:-}"
+  local val=""
+  if [[ "$ASSUME_YES" == "1" ]] || [[ ! -t 0 ]]; then
+    printf '%s' "$default"
+    return
+  fi
+  if [[ -n "$default" ]]; then
+    read -r -p "$prompt [$default]: " val || true
+  else
+    read -r -p "$prompt: " val || true
+  fi
+  printf '%s' "${val:-$default}"
+}
+
+prompt_password() {
+  # $1 prompt, $2 allow empty-to-generate (1/0)
+  local prompt="$1" allow_gen="${2:-1}"
+  local a="" b=""
+  if [[ "$ASSUME_YES" == "1" ]] || [[ ! -t 0 ]]; then
+    if [[ "$allow_gen" == "1" ]]; then
+      rand_hex 16
+      return
+    fi
+    printf ''
+    return
+  fi
+  while true; do
+    if [[ "$allow_gen" == "1" ]]; then
+      read -r -s -p "$prompt (пусто = сгенерировать): " a || true
+    else
+      read -r -s -p "$prompt: " a || true
+    fi
+    echo >&2
+    if [[ -z "$a" && "$allow_gen" == "1" ]]; then
+      a="$(rand_hex 16)"
+      echo "  → сгенерирован" >&2
+      printf '%s' "$a"
+      return
+    fi
+    if [[ -z "$a" ]]; then
+      echo "  пустой пароль не допускается" >&2
+      continue
+    fi
+    read -r -s -p "  Повторите пароль: " b || true
+    echo >&2
+    if [[ "$a" != "$b" ]]; then
+      echo "  не совпадают, ещё раз" >&2
+      continue
+    fi
+    printf '%s' "$a"
+    return
+  done
+}
+
 detect_pkg() {
   if command -v dnf >/dev/null 2>&1; then
     echo dnf
@@ -77,6 +148,70 @@ detect_pkg() {
     die "Нужен dnf/yum (РЕД ОС / RHEL / CentOS / Rocky / Alma)."
   fi
 }
+
+# ---------- 0. Пароли (не нужен текущий пароль postgres) ----------
+echo
+echo "════════════════════════════════════════════════════════════"
+echo " VULNDB — установка"
+echo " Текущий пароль УЗ postgres знать не нужно."
+echo " Скрипт зайдёт как:  sudo -u postgres psql  (peer)"
+echo " и запишет НОВЫЕ пароли, которые покажет в конце."
+echo "════════════════════════════════════════════════════════════"
+
+if [[ ! -t 0 && "$ASSUME_YES" != "1" ]]; then
+  warn "Нет TTY (например curl | sudo bash). Пароли будут сгенерированы."
+  warn "Либо скачайте скрипт и запустите: sudo bash scripts/install-vulndb.sh"
+  ASSUME_YES=1
+fi
+
+if [[ -z "$DOMAIN" ]]; then
+  DOMAIN="$(prompt_line "Домен или IP для Nginx" "$(hostname -f 2>/dev/null || hostname || echo vulndb.local)")"
+fi
+if [[ -z "$DB_USER" ]]; then
+  DB_USER="vulndb"
+fi
+DB_USER="$(prompt_line "Роль PostgreSQL приложения" "$DB_USER")"
+DB_NAME="$(prompt_line "Имя базы" "$DB_NAME")"
+
+if [[ -z "$DB_PASSWORD" ]]; then
+  echo
+  echo "Пароль роли ${DB_USER} (этим паролем ходит Django):"
+  DB_PASSWORD="$(prompt_password "  Пароль БД ${DB_USER}" 1)"
+fi
+
+SET_PG_SUPER=1
+if [[ -n "$PG_SUPER_PASSWORD" ]]; then
+  SET_PG_SUPER=1
+elif [[ "$ASSUME_YES" == "1" ]]; then
+  PG_SUPER_PASSWORD="$(rand_hex 16)"
+  SET_PG_SUPER=1
+else
+  echo
+  if confirm "Задать пароль суперпользователя PostgreSQL (роль postgres), чтобы можно было входить по паролю?"; then
+    PG_SUPER_PASSWORD="$(prompt_password "  Пароль роли postgres" 1)"
+    SET_PG_SUPER=1
+  else
+    SET_PG_SUPER=0
+    PG_SUPER_PASSWORD=""
+  fi
+fi
+
+ADMIN_USER="$(prompt_line "Логин веб-администратора VULNDB" "$ADMIN_USER")"
+if [[ -z "$ADMIN_PASSWORD" ]]; then
+  echo
+  echo "Пароль входа в веб-консоль (${ADMIN_USER}):"
+  ADMIN_PASSWORD="$(prompt_password "  Пароль ${ADMIN_USER}" 1)"
+fi
+if [[ -z "$ADMIN_NAME" ]]; then
+  ADMIN_NAME="$(prompt_line "ФИО администратора" "Администратор")"
+fi
+
+if [[ -z "$SECRET_KEY" ]]; then
+  SECRET_KEY="$(rand_hex 32)"
+fi
+
+echo
+ok "Пароли приняты. Установка пойдёт без запроса пароля postgres."
 
 PKG="$(detect_pkg)"
 
@@ -91,7 +226,6 @@ $PKG -y install \
   python3 python3-devel python3-pip \
   || warn "Часть пакетов могла не установиться — проверьте имена в репозитории РЕД ОС."
 
-# Prefer python3.12 if available
 PYTHON_BIN="python3"
 if command -v python3.12 >/dev/null 2>&1; then
   PYTHON_BIN="python3.12"
@@ -110,7 +244,6 @@ init_postgres_cluster() {
   if pg_cluster_ready; then
     return 0
   fi
-  # RPM often creates an empty data dir; that must not skip initdb.
   if command -v postgresql-setup >/dev/null 2>&1; then
     postgresql-setup --initdb || /usr/bin/postgresql-setup --initdb || true
   fi
@@ -160,39 +293,48 @@ if ! start_postgres; then
 fi
 ok "PostgreSQL service: ${PG_SERVICE}"
 
-# Locate pg_hba
 PG_HBA="$(find /var/lib/pgsql /var/lib/pgsql/*/data /var/lib/postgresql -name pg_hba.conf 2>/dev/null | head -n1 || true)"
 if [[ -n "$PG_HBA" ]]; then
-  # Local password auth for app connections
   if ! grep -q 'vulndb install' "$PG_HBA"; then
-    sed -i 's/^\(local\s\+all\s\+all\s\+\).*/\1scram-sha-256/' "$PG_HBA" || true
-    sed -i 's/^\(host\s\+all\s\+all\s\+127\.0\.0\.1\/32\s\+\).*/\1scram-sha-256/' "$PG_HBA" || true
-    sed -i 's/^\(host\s\+all\s\+all\s\+::1\/128\s\+\).*/\1scram-sha-256/' "$PG_HBA" || true
-    echo "# vulndb install $(date -Iseconds)" >> "$PG_HBA"
+    tmp="$(mktemp)"
+    cat > "$tmp" <<'HBA'
+# vulndb install — peer для ОС-пользователя postgres (sudo -u postgres psql без пароля)
+local   all             postgres                                peer
+local   all             all                                     scram-sha-256
+host    all             all             127.0.0.1/32            scram-sha-256
+host    all             all             ::1/128                 scram-sha-256
+
+HBA
+    cat "$PG_HBA" >> "$tmp"
+    mv "$tmp" "$PG_HBA"
+    chown postgres:postgres "$PG_HBA" 2>/dev/null || true
+    chmod 600 "$PG_HBA" 2>/dev/null || true
   fi
   restart_postgres
-  ok "pg_hba: $PG_HBA"
+  ok "pg_hba: $PG_HBA  (postgres — peer, остальные — пароль)"
 else
-  warn "pg_hba.conf не найден автоматически — при ошибках входа проверьте auth method вручную."
+  warn "pg_hba.conf не найден автоматически."
 fi
 
-if [[ -z "$DB_PASSWORD" ]]; then
-  DB_PASSWORD="$(rand_hex 16)"
-fi
+[[ "$DB_USER" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || die "Имя роли БД должно быть идентификатором: буквы, цифры, _"
+[[ "$DB_NAME" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || die "Имя БД должно быть идентификатором: буквы, цифры, _"
 
-log "Создание роли и БД PostgreSQL ($DB_USER / $DB_NAME)"
+log "Создание роли и БД PostgreSQL ($DB_USER / $DB_NAME) — пароль задаём мы"
 sudo -u postgres psql -v ON_ERROR_STOP=1 <<SQL
 DO \$\$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${DB_USER}') THEN
-    CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';
-  ELSE
-    ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';
+    CREATE USER ${DB_USER} LOGIN;
   END IF;
 END
 \$\$;
-SELECT 'ok_role';
 SQL
+set_role_password "$DB_USER" "$DB_PASSWORD"
+
+if [[ "$SET_PG_SUPER" == "1" && -n "$PG_SUPER_PASSWORD" ]]; then
+  set_role_password postgres "$PG_SUPER_PASSWORD"
+  ok "Пароль роли postgres задан (TCP: psql -h 127.0.0.1 -U postgres)"
+fi
 
 DB_EXISTS="$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" || true)"
 if [[ "$DB_EXISTS" != "1" ]]; then
@@ -206,9 +348,9 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${DB_USER};
 SQL
 
 if PGPASSWORD="$DB_PASSWORD" psql -h 127.0.0.1 -U "$DB_USER" -d "$DB_NAME" -c 'SELECT 1;' >/dev/null; then
-  ok "PostgreSQL: SELECT 1 OK"
+  ok "PostgreSQL: SELECT 1 OK (${DB_USER}@127.0.0.1/${DB_NAME})"
 else
-  die "Не удалось подключиться к PostgreSQL под ${DB_USER}"
+  die "Не удалось подключиться к PostgreSQL под ${DB_USER} с заданным паролем"
 fi
 
 # ---------- 3. Redis ----------
@@ -256,9 +398,6 @@ ok "Зависимости установлены"
 
 # ---------- 7. .env ----------
 log "Файл .env"
-if [[ -z "$SECRET_KEY" ]]; then
-  SECRET_KEY="$(rand_hex 32)"
-fi
 if [[ -z "$DOMAIN" ]]; then
   DOMAIN="$(hostname -f 2>/dev/null || hostname || echo vulndb.local)"
 fi
@@ -266,20 +405,19 @@ PRIMARY_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 ALLOWED_HOSTS="${DOMAIN},localhost,127.0.0.1"
 [[ -n "$PRIMARY_IP" ]] && ALLOWED_HOSTS="${ALLOWED_HOSTS},${PRIMARY_IP}"
 
-DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@127.0.0.1:5432/${DB_NAME}"
+DB_PASSWORD_ENC="$(urlencode "$DB_PASSWORD")"
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD_ENC}@127.0.0.1:5432/${DB_NAME}"
 ENV_FILE="$INSTALL_DIR/.env"
+WRITE_ENV=1
 
 if [[ -f "$ENV_FILE" ]] && [[ "$ASSUME_YES" != "1" ]]; then
-  if ! confirm ".env уже существует — перезаписать?"; then
+  if ! confirm ".env уже существует — перезаписать новыми паролями?"; then
+    WRITE_ENV=0
     warn "Оставляем существующий .env"
-  else
-    WRITE_ENV=1
   fi
-else
-  WRITE_ENV=1
 fi
 
-if [[ "${WRITE_ENV:-0}" == "1" ]]; then
+if [[ "$WRITE_ENV" == "1" ]]; then
   cat > "$ENV_FILE" <<EOF
 DEBUG=0
 SECRET_KEY=${SECRET_KEY}
@@ -294,6 +432,7 @@ REDIS_URL=redis://127.0.0.1:6379/0
 CELERY_BROKER_URL=redis://127.0.0.1:6379/0
 CELERY_RESULT_BACKEND=redis://127.0.0.1:6379/0
 
+VULNDB_LICENSE_REQUIRED=0
 LICENSE_SERVER_URL=http://127.0.0.1:8090
 LICENSE_FILE=${INSTALL_DIR}/.novalic
 LICENSE_GRACE_DAYS=14
@@ -307,7 +446,7 @@ EOF
   ok ".env записан ($ENV_FILE)"
 fi
 
-# ---------- 8. migrate / static ----------
+# ---------- 8. migrate / static / admin ----------
 log "Миграции и collectstatic"
 cd "$INSTALL_DIR"
 run_manage() {
@@ -322,7 +461,6 @@ run_manage() {
 }
 run_manage migrate --noinput
 run_manage collectstatic --noinput
-# media path
 mkdir -p "$DATA_DIR/media"
 if [[ ! -e "$INSTALL_DIR/media" ]]; then
   ln -s "$DATA_DIR/media" "$INSTALL_DIR/media"
@@ -330,12 +468,48 @@ fi
 chown -R "$APP_USER:$APP_USER" "$DATA_DIR/media"
 ok "migrate + collectstatic"
 
+if [[ -n "$ADMIN_USER" && -n "$ADMIN_PASSWORD" ]]; then
+  log "Веб-администратор ${ADMIN_USER}"
+  sudo -u "$APP_USER" env \
+    VULNDB_BOOTSTRAP_USER="$ADMIN_USER" \
+    VULNDB_BOOTSTRAP_PASSWORD="$ADMIN_PASSWORD" \
+    VULNDB_BOOTSTRAP_NAME="$ADMIN_NAME" \
+    bash -lc "
+      set -a
+      source '$ENV_FILE'
+      set +a
+      cd '$INSTALL_DIR'
+      '$INSTALL_DIR/.venv/bin/python' - <<'PY'
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+import django
+django.setup()
+from vulndb.apps.accounts.models import Role, User
+username = os.environ['VULNDB_BOOTSTRAP_USER']
+password = os.environ['VULNDB_BOOTSTRAP_PASSWORD']
+name = os.environ.get('VULNDB_BOOTSTRAP_NAME') or ''
+u, created = User.objects.get_or_create(
+    username=username,
+    defaults={'full_name': name, 'role': Role.PLATFORM_ADMIN, 'is_staff': True, 'is_superuser': True},
+)
+u.full_name = name or u.full_name
+u.role = Role.PLATFORM_ADMIN
+u.is_staff = True
+u.is_superuser = True
+u.is_active = True
+u.set_password(password)
+u.save()
+print('created' if created else 'updated', username)
+PY
+    "
+  ok "Веб-админ ${ADMIN_USER} готов (роль Platform Admin)"
+fi
+
 # ---------- 9. systemd ----------
 log "systemd unit-файлы"
 for unit in vulndb-web vulndb-worker vulndb-beat; do
   src="$INSTALL_DIR/deploy/systemd/${unit}.service"
   [[ -f "$src" ]] || die "Нет файла $src"
-  # Rewrite paths if install dir differs from /opt/vulndb
   sed "s|/opt/vulndb|${INSTALL_DIR}|g" "$src" > "/etc/systemd/system/${unit}.service"
 done
 systemctl daemon-reload
@@ -354,7 +528,6 @@ if [[ "$SKIP_NGINX" != "1" ]]; then
       -e "s|/opt/vulndb|${INSTALL_DIR}|g" \
       -e "s|/var/lib/vulndb/media|${DATA_DIR}/media|g" \
       "$NGINX_SRC" > "$NGINX_DST"
-  # SELinux contexts if enforcing
   if command -v getenforce >/dev/null 2>&1 && [[ "$(getenforce)" == "Enforcing" ]]; then
     command -v semanage >/dev/null 2>&1 && {
       semanage fcontext -a -t httpd_sys_content_t "${INSTALL_DIR}/staticfiles(/.*)?" 2>/dev/null || true
@@ -390,28 +563,70 @@ else
 fi
 
 CRED_FILE="/root/vulndb-install-credentials.txt"
-cat > "$CRED_FILE" <<EOF
-VULNDB install summary — $(date -Iseconds)
-Install dir : ${INSTALL_DIR}
-Domain/host : ${DOMAIN}
-DB name/user: ${DB_NAME} / ${DB_USER}
-DB password : ${DB_PASSWORD}
-SECRET_KEY  : ${SECRET_KEY}
-.env        : ${ENV_FILE}
+PG_PASS_LINE="(не задавали — вход: sudo -u postgres psql)"
+if [[ "$SET_PG_SUPER" == "1" && -n "$PG_SUPER_PASSWORD" ]]; then
+  PG_PASS_LINE="$PG_SUPER_PASSWORD"
+fi
 
-Откройте в браузере: http://${DOMAIN}/  (или http://${PRIMARY_IP}/)
-Первый вход: мастер настройки /setup/
+cat > "$CRED_FILE" <<EOF
+VULNDB — данные установки  $(date -Iseconds)
+================================================
+URL (браузер)     : http://${DOMAIN}/
+Мастер /setup/    : http://${DOMAIN}/setup/
+По IP             : http://${PRIMARY_IP:-}/
+
+Веб-консоль
+  логин           : ${ADMIN_USER}
+  пароль          : ${ADMIN_PASSWORD}
+  роль            : Platform Admin
+  пользователи    : http://${DOMAIN}/users/  (только админ)
+
+PostgreSQL
+  host/port       : 127.0.0.1:5432
+  database        : ${DB_NAME}
+  user (приложение): ${DB_USER}
+  password        : ${DB_PASSWORD}
+  суперuser postgres password : ${PG_PASS_LINE}
+  без пароля      : sudo -u postgres psql
+  проверка        : PGPASSWORD='${DB_PASSWORD}' psql -h 127.0.0.1 -U ${DB_USER} -d ${DB_NAME} -c 'SELECT 1'
+
+Redis             : 127.0.0.1:6379
+.env              : ${ENV_FILE}
+SECRET_KEY        : ${SECRET_KEY}
+Install dir       : ${INSTALL_DIR}
+systemd           : vulndb-web vulndb-worker vulndb-beat
+PostgreSQL unit   : ${PG_SERVICE}
 
 Команды:
   systemctl status vulndb-web vulndb-worker vulndb-beat
   journalctl -u vulndb-web -f
+================================================
+Файл только для root (chmod 600). Не коммитьте.
 EOF
 chmod 600 "$CRED_FILE"
 
 echo
-ok "Установка VULNDB завершена"
-echo "  URL:     http://${DOMAIN}/  (мастер /setup/)"
-echo "  Логи:    journalctl -u vulndb-web -f"
-echo "  Секреты: ${CRED_FILE}  (храните в сейфе, не коммитьте)"
+echo "════════════════════════════════════════════════════════════"
+echo " VULNDB установлен. Сохраните эти данные:"
+echo "════════════════════════════════════════════════════════════"
+echo "  URL            : http://${DOMAIN}/   (мастер: /setup/)"
+echo "  Веб-админ      : ${ADMIN_USER}"
+echo "  Пароль веба    : ${ADMIN_PASSWORD}"
+echo "  Пользователи   : http://${DOMAIN}/users/  (только админ)"
 echo
-echo "Дальше: откройте мастер → организация → брендинг → БД (уже готова) → источники → админ."
+echo "  PostgreSQL"
+echo "    host         : 127.0.0.1:5432"
+echo "    db / user    : ${DB_NAME} / ${DB_USER}"
+echo "    password     : ${DB_PASSWORD}"
+echo "    postgres     : ${PG_PASS_LINE}"
+echo "    без пароля   : sudo -u postgres psql"
+echo
+echo "  Redis          : 127.0.0.1:6379"
+echo "  .env           : ${ENV_FILE}"
+echo "  Копия          : ${CRED_FILE}"
+echo "  Логи           : journalctl -u vulndb-web -f"
+echo "════════════════════════════════════════════════════════════"
+ok "Установка VULNDB завершена"
+echo
+echo "Дальше: откройте http://${DOMAIN}/setup/ (организация → источники → админ уже создан)."
+echo "Локальных пользователей с ролями создаёт администратор в разделе «Пользователи»."
